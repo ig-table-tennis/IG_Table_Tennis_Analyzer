@@ -35,8 +35,8 @@ jobs:
             libncurses5-dev \
             libncursesw5-dev \
             cmake \
-libffi-dev \
-            li            bssl-dev
+            libffi-dev \
+            libssl-dev
 
       - name: Instalar Buildozer
         run: |
