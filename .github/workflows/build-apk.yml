@@ -19,10 +19,29 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Preparar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
       - name: Instalar dependencias del sistema
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk autoconf automake libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev
+          sudo apt install -y \
+            git \
+            zip \
+            unzip \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            cmake \
+            libffi-dev \
+            libssl-dev
 
       - name: Instalar Buildozer
         run: |
@@ -31,7 +50,7 @@ jobs:
 
       - name: Construir APK
         run: |
-          buildozer android debug
+          yes | buildozer android debug
 
       - name: Guardar APK
         uses: actions/upload-artifact@v4
