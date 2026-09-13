@@ -20,7 +20,7 @@ jobs:
           python-version: "3.11"
 
       - name: Preparar Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
@@ -42,6 +42,20 @@ jobs:
             cmake \
             libffi-dev \
             libssl-dev
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar herramientas Android
+        run: |
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-35"
+          sdkmanager "build-tools;35.0.0"
+          sdkmanager "cmdline-tools;latest"
+
+      - name: Aceptar licencias Android
+        run: |
+          yes | sdkmanager --licenses || true
 
       - name: Instalar Buildozer
         run: |
