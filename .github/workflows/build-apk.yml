@@ -35,6 +35,7 @@ jobs:
             autoconf \
             automake \
             libtool \
+            libtool-bin \
             pkg-config \
             zlib1g-dev \
             libncurses5-dev \
@@ -42,6 +43,16 @@ jobs:
             cmake \
             libffi-dev \
             libssl-dev
+
+      - name: Preparar Autoconf y Libtool
+        run: |
+          echo "ACLOCAL_PATH=/usr/share/aclocal" >> "$GITHUB_ENV"
+          export ACLOCAL_PATH=/usr/share/aclocal
+
+          aclocal --print-ac-dir
+          libtoolize --version
+          autoconf --version
+          automake --version
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
@@ -62,8 +73,14 @@ jobs:
           pip install --upgrade pip
           pip install buildozer
 
+      - name: Limpiar compilación anterior
+        run: |
+          rm -rf .buildozer
+          rm -rf bin
+
       - name: Construir APK
         run: |
+          export ACLOCAL_PATH=/usr/share/aclocal
           yes | buildozer android debug
 
       - name: Guardar APK
