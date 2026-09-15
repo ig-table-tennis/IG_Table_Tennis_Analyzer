@@ -44,42 +44,7 @@ class IGButton(Button):
     # CARGAR COPIAS DE LOS SONIDOS
     # ==========================================
 
-    for _ in range(4):
-
-        sonido = SoundLoader.load(
-            "sounds/golpe_seco.wav"
-        )
-
-        if sonido:
-            sonidos_golpe.append(sonido)
-
-        sonido = SoundLoader.load(
-            "sounds/analizar.wav"
-        )
-
-        if sonido:
-            sonidos_analizar.append(sonido)
-
-        sonido = SoundLoader.load(
-            "sounds/borrar.wav"
-        )
-
-        if sonido:
-            sonidos_borrar.append(sonido)
-
-        sonido = SoundLoader.load(
-            "sounds/comenzar.wav"
-        )
-
-        if sonido:
-            sonidos_comenzar.append(sonido)
-
-        sonido = SoundLoader.load(
-            "sounds/no.wav"
-        )
-
-        if sonido:
-            sonidos_no.append(sonido)
+    # Sonidos desactivados temporalmente para prueba Android 
 
     # ==========================================
     # INICIALIZACIÓN
