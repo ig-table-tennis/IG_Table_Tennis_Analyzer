@@ -56,14 +56,13 @@ jobs:
           automake --version
 
       - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Instalar herramientas Android
         run: |
           sdkmanager "platform-tools"
           sdkmanager "platforms;android-35"
           sdkmanager "build-tools;35.0.0"
-          sdkmanager "cmdline-tools;latest"
 
       - name: Aceptar licencias Android
         run: |
