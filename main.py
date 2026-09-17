@@ -4,36 +4,30 @@ from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
 
+
 try:
-
-from igtta import TenisMesaApp
-
-TenisMesaApp().run()
+    from igtta import TenisMesaApp
+    TenisMesaApp().run()
 
 except Exception:
+    error = traceback.format_exc()
 
-error = traceback.format_exc()
+    class ErrorApp(App):
+        def build(self):
+            scroll = ScrollView()
 
-class ErrorApp(App):
+            label = Label(
+                text=error,
+                font_size="12sp",
+                size_hint_y=None,
+                halign="left",
+                valign="top"
+            )
 
-    def build(self):
+            label.bind(texture_size=label.setter("size"))
 
-        scroll = ScrollView()
+            scroll.add_widget(label)
 
-        label = Label(
-            text=error,
-            font_size="12sp",
-            size_hint_y=None,
-            halign="left",
-            valign="top"
-        )
+            return scroll
 
-        label.bind(
-            texture_size=label.setter("size")
-        )
-
-        scroll.add_widget(label)
-
-        return scroll
-
-ErrorApp().run()
+    ErrorApp().run()
