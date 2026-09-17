@@ -89,7 +89,11 @@ jobs:
       - name: Construir APK
         run: |
           export ACLOCAL_PATH=/usr/share/aclocal
-          yes | buildozer android debug
+          yes | buildozer android debug > build.log 2>&1 || {
+            echo "===== ÚLTIMAS 150 LÍNEAS DEL ERROR ====="
+            tail -n 150 build.log
+            exit 1
+          }
 
       - name: Guardar APK
         uses: actions/upload-artifact@v4
