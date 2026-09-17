@@ -78,6 +78,8 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install buildozer
+          python --version
+          pip show buildozer
 
       - name: Limpiar compilación anterior
         run: |
