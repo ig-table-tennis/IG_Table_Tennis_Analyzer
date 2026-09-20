@@ -28,7 +28,6 @@ class Entrada(TextInput):
     # ==================================
 
     @staticmethod
-    
     def crear_titulo():
 
         titulo = Label(
@@ -63,6 +62,43 @@ class Entrada(TextInput):
             spacing=dp(8)
         )
 
+        # ==================================
+        # FONDO DE LA FILA INFERIOR
+        # ==================================
+
+        with fila.canvas.before:
+
+            from kivy.graphics import Color, Rectangle
+
+            Color(
+                0.15,
+                0.15,
+                0.15,
+                1
+            )
+
+            fondo = Rectangle(
+                pos=fila.pos,
+                size=fila.size
+            )
+
+            fila.bind(
+                pos=lambda w, v: setattr(
+                    fondo,
+                    "pos",
+                    w.pos
+                ),
+                size=lambda w, v: setattr(
+                    fondo,
+                    "size",
+                    w.size
+                )
+            )
+
+        # ==================================
+        # BOTONES
+        # ==================================
+
         boton_nueva = IGButton(
             text="Nueva partida"
         )
@@ -71,8 +107,13 @@ class Entrada(TextInput):
             text="Borrar Pantalla"
         )
 
-        boton_nueva.set_color((0.25, 0.25, 0.25, 1))
-        boton_borrar.set_color((0.25, 0.25, 0.25, 1))
+        boton_nueva.set_color(
+            (0.25, 0.25, 0.25, 1)
+        )
+
+        boton_borrar.set_color(
+            (0.25, 0.25, 0.25, 1)
+        )
 
         boton_nueva.bind(
             on_press=app.nueva_partida
@@ -82,7 +123,12 @@ class Entrada(TextInput):
             on_press=app.borrar
         )
 
-        fila.add_widget(boton_nueva)
-        fila.add_widget(boton_borrar)
+        fila.add_widget(
+            boton_nueva
+        )
+
+        fila.add_widget(
+            boton_borrar
+        )
 
         return fila
