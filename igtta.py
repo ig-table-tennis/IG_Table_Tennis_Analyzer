@@ -7,6 +7,7 @@
 from kivy.app import App
 from kivy.metrics import dp
 from kivy.clock import Clock
+from kivy.graphics import Color, Rectangle
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
@@ -37,6 +38,18 @@ class TenisMesaApp(App):
             orientation="vertical",
             padding=dp(10),
             spacing=dp(10)
+        )
+        
+        with principal.canvas.before:
+            Color(0.7, 0.7, 0.7, 1)
+            fondo_principal = Rectangle(
+                pos=principal.pos,
+                size=principal.size
+            )
+
+        principal.bind(
+            pos=lambda w, v: setattr(fondo_principal, "pos", v),
+            size=lambda w, v: setattr(fondo_principal, "size", v)
         )
 
         # ==========================================
