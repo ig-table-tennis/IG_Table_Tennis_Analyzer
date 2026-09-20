@@ -39,7 +39,7 @@ requirements = python3,kivy
 # ORIENTACIÓN
 # ==========================================================
 
-orientation = landscape
+orientation = portrait
 
 
 # ==========================================================
