@@ -35,7 +35,9 @@ class Entrada(TextInput):
             font_name="fonts/Hand-Bold.ttf", 
             size_hint=(1, None),
             height=dp(45),
-            font_size="22sp"
+            font_size="22sp",
+            valign="bottom",
+            padding_y=dp(5)
         )
 
     # ==================================
@@ -45,7 +47,7 @@ class Entrada(TextInput):
 
         fila = BoxLayout(
             size_hint=(1, None),
-            height=dp(50),
+            height=dp(60),
             spacing=dp(8)
         )
 
