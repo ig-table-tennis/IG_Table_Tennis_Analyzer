@@ -44,7 +44,35 @@ class IGButton(Button):
     # CARGAR COPIAS DE LOS SONIDOS
     # ==========================================
 
-    # Sonidos desactivados temporalmente para prueba Android 
+    sonidos_golpe = [
+        SoundLoader.load("sounds/golpe_seco.wav"),
+        SoundLoader.load("sounds/golpe_seco.wav"),
+        SoundLoader.load("sounds/golpe_seco.wav"),
+    ]
+
+    sonidos_analizar = [
+        SoundLoader.load("sounds/analizar.wav"),
+        SoundLoader.load("sounds/analizar.wav"),
+        SoundLoader.load("sounds/analizar.wav"),
+    ]
+
+    sonidos_borrar = [
+        SoundLoader.load("sounds/borrar.wav"),
+        SoundLoader.load("sounds/borrar.wav"),
+        SoundLoader.load("sounds/borrar.wav"),
+    ]
+
+    sonidos_comenzar = [
+        SoundLoader.load("sounds/comenzar.wav"),
+        SoundLoader.load("sounds/comenzar.wav"),
+        SoundLoader.load("sounds/comenzar.wav"),
+    ]
+
+    sonidos_no = [
+        SoundLoader.load("sounds/no.wav"),
+        SoundLoader.load("sounds/no.wav"),
+        SoundLoader.load("sounds/no.wav"),
+    ]
 
     # ==========================================
     # INICIALIZACIÓN
