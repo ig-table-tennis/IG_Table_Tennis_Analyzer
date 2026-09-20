@@ -28,17 +28,29 @@ class Entrada(TextInput):
     # ==================================
 
     @staticmethod
+    
     def crear_titulo():
 
-        return Label(
+        titulo = Label(
             text="IG Table Tennis Analyzer",
-            font_name="fonts/Hand-Bold.ttf", 
+            font_name="fonts/Hand-Bold.ttf",
             size_hint=(1, None),
             height=dp(45),
             font_size="22sp",
+            halign="center",
             valign="bottom",
-            padding_y=dp(5)
+            padding_y=dp(0)
         )
+
+        titulo.bind(
+            size=lambda w, s: setattr(
+                w,
+                "text_size",
+                w.size
+            )
+        )
+
+        return titulo
 
     # ==================================
 
