@@ -61,6 +61,7 @@ android.archs = arm64-v8a
 # Dejamos de momento el icono predeterminado.
 # Más adelante podemos poner icons/....png
 
+icon.filename = icons/pala.png
 
 # ==========================================================
 # CONFIGURACIÓN DE BUILD
