@@ -405,20 +405,49 @@ class TenisMesaApp(App):
         )
 
         def mostrar_alturas(*args):
-            print("========== ALTURAS ANDROID ==========")
-            print("principal:", principal.height)
-            print("titulo:", self.titulo.height)
-            print("panel:", self.panel.height)
-            print("label:", self.label_jugada.height)
-            print("scroll:", scroll.height)
-            print("visor:", self.visor.height)
-            print("salida:", self.salida.height)
-            print("fila:", fila.height)
-            print("botones inferiores:", self.botones_inferiores.height)
-            print("=====================================")
 
-        Clock.schedule_once(mostrar_alturas, 1)
-        
+            texto_diagnostico = (
+                "DIAGNÓSTICO\n\n"
+                f"Principal: {principal.height:.1f} dp\n"
+                f"Título: {self.titulo.height:.1f} dp\n"
+                f"Panel: {self.panel.height:.1f} dp\n"
+                f"Label: {self.label_jugada.height:.1f} dp\n"
+                f"Scroll: {scroll.height:.1f} dp\n"
+                f"Visor: {self.visor.height:.1f} dp\n"
+                f"Salida: {self.salida.height:.1f} dp\n"
+                f"Fila: {fila.height:.1f} dp\n"
+                f"Botones inferiores: "
+                f"{self.botones_inferiores.height:.1f} dp"
+            )
+
+            diagnostico = Label(
+                text=texto_diagnostico,
+                color=(1, 1, 1, 1),
+                font_size="12sp",
+                size_hint=(None, None),
+                size=(dp(300), dp(300)),
+                halign="left",
+                valign="top"
+            )
+
+            diagnostico.text_size = diagnostico.size
+
+            from kivy.uix.popup import Popup
+
+            popup_diagnostico = Popup(
+                title="Diagnóstico Android",
+                content=diagnostico,
+                size_hint=(None, None),
+                size=(dp(330), dp(360)),
+                auto_dismiss=True
+            )
+
+            popup_diagnostico.open()
+
+        Clock.schedule_once(
+            mostrar_alturas,
+            1
+        )
         # ==========================================
         # LÓGICA
         # ==========================================
