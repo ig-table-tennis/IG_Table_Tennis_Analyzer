@@ -8,6 +8,7 @@ from kivy.app import App
 from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.graphics import Color, Rectangle
+from kivy.core.window import Window
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
@@ -408,6 +409,10 @@ class TenisMesaApp(App):
 
             texto_diagnostico = (
                 "DIAGNÓSTICO\n\n"
+                f"Window.size: {Window.size}\n"
+                f"Window.system_size: {Window.system_size}\n"
+                f"Window.dpi: {Window.dpi:.1f}\n"
+                f"dp(1): {dp(1):.2f}\n\n"
                 f"Principal: {principal.height:.1f} dp\n"
                 f"Título: {self.titulo.height:.1f} dp\n"
                 f"Panel: {self.panel.height:.1f} dp\n"
