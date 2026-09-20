@@ -141,8 +141,6 @@ class TenisMesaApp(App):
 
         with self.visor.canvas.before:
 
-            from kivy.graphics import Color, Rectangle
-
             Color(
                 0.7,
                 0.7,
