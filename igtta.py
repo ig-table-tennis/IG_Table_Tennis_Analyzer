@@ -368,7 +368,7 @@ class TenisMesaApp(App):
             altura_final = min(
                 ALTURA_MAXIMA,
                 max(
-                    ALTURA_MINIMA,
+                    0,
                     espacio_disponible
                 )
             )
