@@ -404,6 +404,21 @@ class TenisMesaApp(App):
             0
         )
 
+        def mostrar_alturas(*args):
+            print("========== ALTURAS ANDROID ==========")
+            print("principal:", principal.height)
+            print("titulo:", self.titulo.height)
+            print("panel:", self.panel.height)
+            print("label:", self.label_jugada.height)
+            print("scroll:", scroll.height)
+            print("visor:", self.visor.height)
+            print("salida:", self.salida.height)
+            print("fila:", fila.height)
+            print("botones inferiores:", self.botones_inferiores.height)
+            print("=====================================")
+
+        Clock.schedule_once(mostrar_alturas, 1)
+        
         # ==========================================
         # LÓGICA
         # ==========================================
