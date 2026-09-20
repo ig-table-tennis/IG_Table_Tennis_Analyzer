@@ -62,7 +62,7 @@ class TenisMesaApp(App):
         principal.add_widget(
             Widget(
                 size_hint=(1, None),
-                height=dp(20)
+                height=dp(30)
             )
         )
 
@@ -104,7 +104,7 @@ class TenisMesaApp(App):
             self.label_jugada
         )
 
-        # ==========================================
+# ==========================================
 # VISOR GRÁFICO DE LA JUGADA
 # ==========================================
 
@@ -286,7 +286,7 @@ class TenisMesaApp(App):
 
             altura_titulo = self.titulo.height
 
-            altura_separador = dp(20)
+            altura_separador = dp(30)
 
             altura_panel = self.panel.height
 
