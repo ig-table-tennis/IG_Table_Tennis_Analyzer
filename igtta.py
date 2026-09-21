@@ -128,7 +128,30 @@ class TenisMesaApp(App):
 # ------------------------------------------
 # FONDO DEL VISOR
 # ------------------------------------------
+        with self.visor.canvas.before:
 
+            Color(
+                1,
+                1,
+                1,
+                1
+            )
+
+            self.visor._bg = Rectangle()
+
+            self.visor.bind(
+                pos=lambda w, v: setattr(
+                    self.visor._bg,
+                    "pos",
+                    w.pos
+                ),
+                size=lambda w, v: setattr(
+                    self.visor._bg,
+                    "size",
+                    w.size
+                )
+            )
+        
         scroll.add_widget(
             self.visor
         )
@@ -304,7 +327,8 @@ class TenisMesaApp(App):
 
             altura_espacios = (
                 dp(20) +
-                dp(70)
+                dp(70) +
+                dp(100)
             )
 
             altura_fija = (
