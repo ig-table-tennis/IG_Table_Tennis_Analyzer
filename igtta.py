@@ -31,6 +31,8 @@ class TenisMesaApp(App):
 
     def build(self):
         
+        Window.clearcolor = (0, 0, 0, 1)
+        
         # ==========================================
         # VENTANA PRINCIPAL
         # ==========================================
@@ -41,18 +43,6 @@ class TenisMesaApp(App):
             spacing=dp(10)
         )
         
-        with principal.canvas.before:
-            Color(0.7, 0.7, 0.7, 1)
-            fondo_principal = Rectangle(
-                pos=principal.pos,
-                size=principal.size
-            )
-
-        principal.bind(
-            pos=lambda w, v: setattr(fondo_principal, "pos", v),
-            size=lambda w, v: setattr(fondo_principal, "size", v)
-        )
-
         # ==========================================
         # VARIABLES
         # ==========================================
@@ -139,30 +129,6 @@ class TenisMesaApp(App):
 # ------------------------------------------
 # FONDO DEL VISOR
 # ------------------------------------------
-
-        with self.visor.canvas.before:
-
-            Color(
-                0.7,
-                0.7,
-                0.7,
-                1
-            )
-
-            self.visor._bg = Rectangle()
-
-            self.visor.bind(
-                pos=lambda w, v: setattr(
-                self.visor._bg,
-                "pos",
-                w.pos
-            ),
-            size=lambda w, v: setattr(
-                self.visor._bg,
-                "size",
-                w.size
-            )
-        )
 
         scroll.add_widget(
             self.visor
