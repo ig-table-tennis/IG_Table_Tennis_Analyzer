@@ -5,7 +5,7 @@
 # ==========================================
 
 from kivy.app import App
-from kivy.metrics import dp, Metrics
+from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
@@ -30,8 +30,6 @@ from logica import Logica, Config
 class TenisMesaApp(App):
 
     def build(self):
-       
-        Metrics.density = 1
         
         # ==========================================
         # VENTANA PRINCIPAL
