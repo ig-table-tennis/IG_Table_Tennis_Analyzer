@@ -7,7 +7,6 @@
 from kivy.app import App
 from kivy.metrics import dp
 from kivy.clock import Clock
-from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
 
 from kivy.uix.boxlayout import BoxLayout
