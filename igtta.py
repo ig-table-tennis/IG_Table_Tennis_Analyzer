@@ -42,23 +42,6 @@ class TenisMesaApp(App):
             padding=dp(10),
             spacing=dp(10)
         )
-
-        with principal.canvas.before:
-            Color(0.3, 0.3, 0.3, 1)
-            principal._bg = Rectangle()
-
-            principal.bind(
-                pos=lambda w, v: setattr(
-                    principal._bg,
-                    "pos",
-                    w.pos
-                ),
-                size=lambda w, v: setattr(
-                    principal._bg,
-                    "size",
-                    w.size
-                )
-            ) 
         
         # ==========================================
         # VARIABLES
