@@ -349,7 +349,6 @@ class TenisMesaApp(App):
             espacio_disponible = (
                 principal.height
                 - altura_fija
-                - dp(80)
             )
 
             # --------------------------------------
