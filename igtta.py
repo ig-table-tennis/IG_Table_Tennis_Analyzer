@@ -394,54 +394,6 @@ class TenisMesaApp(App):
             0
         )
 
-        def mostrar_alturas(*args):
-
-            texto_diagnostico = (
-                "DIAGNÓSTICO\n\n"
-                f"Window.size: {Window.size}\n"
-                f"Window.system_size: {Window.system_size}\n"
-                f"Window.dpi: {Window.dpi:.1f}\n"
-                f"dp(1): {dp(1):.2f}\n\n"
-                f"Principal: {principal.height:.1f} dp\n"
-                f"Título: {self.titulo.height:.1f} dp\n"
-                f"Panel: {self.panel.height:.1f} dp\n"
-                f"Label: {self.label_jugada.height:.1f} dp\n"
-                f"Scroll: {scroll.height:.1f} dp\n"
-                f"Visor: {self.visor.height:.1f} dp\n"
-                f"Salida: {self.salida.height:.1f} dp\n"
-                f"Fila: {fila.height:.1f} dp\n"
-                f"Botones inferiores: "
-                f"{self.botones_inferiores.height:.1f} dp"
-            )
-
-            diagnostico = Label(
-                text=texto_diagnostico,
-                color=(1, 1, 1, 1),
-                font_size="12sp",
-                size_hint=(None, None),
-                size=(dp(300), dp(300)),
-                halign="left",
-                valign="top"
-            )
-
-            diagnostico.text_size = diagnostico.size
-
-            from kivy.uix.popup import Popup
-
-            popup_diagnostico = Popup(
-                title="Diagnóstico Android",
-                content=diagnostico,
-                size_hint=(None, None),
-                size=(dp(330), dp(360)),
-                auto_dismiss=True
-            )
-
-            popup_diagnostico.open()
-
-        Clock.schedule_once(
-            mostrar_alturas,
-            1
-        )
         # ==========================================
         # LÓGICA
         # ==========================================
