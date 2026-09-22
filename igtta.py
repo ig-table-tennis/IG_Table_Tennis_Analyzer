@@ -149,9 +149,9 @@ class TenisMesaApp(App):
         with self.visor.canvas.before:
 
             Color(
-                0,7,
-                0,7,
-                0,7,
+                0.7,
+                0.7,
+                0.7,
                 1
             )
 
