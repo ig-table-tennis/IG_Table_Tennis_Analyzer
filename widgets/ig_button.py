@@ -18,7 +18,6 @@ from kivy.metrics import dp
 from kivy.animation import Animation
 from kivy.core.audio import SoundLoader
 
-
 class IGButton(Button):
 
     # ==========================================
@@ -288,6 +287,17 @@ class IGButton(Button):
         texto = self.text.strip().upper()
 
         # ==================================
+        # PRUEBA DE LATENCIA
+        # ==================================
+
+        self._reproducir_sonido(
+            IGButton.sonidos_borrar,
+            "_indice_borrar"
+        )
+
+        return
+        
+        # ==================================
         # ANALIZAR
         # ==================================
 
@@ -377,10 +387,14 @@ class IGButton(Button):
         # SONIDO NORMAL
         # ==================================
 
+        # ==================================
+        # PRUEBA TEMPORAL
+        # ==================================
+
         self._reproducir_sonido(
-            IGButton.sonidos_golpe,
-            "_indice_golpe"
-        )
+            IGButton.sonidos_borrar,
+            "_indice_borrar"
+        ) 
 
     # ==========================================
     # ACTUALIZAR FONDO
