@@ -132,9 +132,9 @@ class TenisMesaApp(App):
         with self.visor.canvas.before:
 
             Color(
-                1,
-                1,
-                1,
+                0,7,
+                0,7,
+                0,7,
                 1
             )
 
@@ -328,8 +328,7 @@ class TenisMesaApp(App):
 
             altura_espacios = (
                 dp(20) +
-                dp(70) +
-                dp(100)
+                dp(70)
             )
 
             altura_fija = (
