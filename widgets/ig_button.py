@@ -276,8 +276,7 @@ class IGButton(Button):
         # ----------------------------------
         # Reproducir inmediatamente
         # ----------------------------------
-
-        sonido.stop()
+        
         sonido.play()
 
     # ==========================================
