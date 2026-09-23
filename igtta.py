@@ -1,842 +1,696 @@
 # ==========================================
-# IG_TABLE_TENNIS_ANALYZER
-# igtta.py
-# Ventana principal
+# widgets/ig_button.py
+# Botón personalizado IG
 # ==========================================
 
-from kivy.app import App
+from kivy.graphics import (
+    Color,
+    RoundedRectangle,
+    Line,
+    PushMatrix,
+    PopMatrix,
+    Translate
+)
+
+from kivy.uix.image import Image
+from kivy.uix.button import Button
 from kivy.metrics import dp
-from kivy.clock import Clock
-from kivy.core.window import Window
-from kivy.graphics import Color, Rectangle
-
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.anchorlayout import AnchorLayout
-from kivy.uix.widget import Widget
-from kivy.uix.popup import Popup
-from kivy.uix.label import Label
-from kivy.uix.scrollview import ScrollView
-
-from widgets.panel_botones import PanelBotones
-from widgets.marcador import Marcador
-from widgets.salida import Salida
-from widgets.visor_jugada import VisorJugada
-from widgets.entrada import Entrada
-from widgets.ig_button import IGButton
-
-from logica import Logica, Config
+from kivy.animation import Animation
+from kivy.core.audio import SoundLoader
 
 
-class TenisMesaApp(App):
+class IGButton(Button):
 
-    def build(self):
-        
-        Window.clearcolor = (0, 0, 0, 1)
-        
-        # ==========================================
-        # VENTANA PRINCIPAL
-        # ==========================================
+    # ==========================================
+    # CARGA DE SONIDOS
+    # ==========================================
 
-        principal = BoxLayout(
-            orientation="vertical",
-            padding=dp(10),
-            spacing=dp(10)
-        )
-        
-        # ==========================================
-        # VARIABLES
-        # ==========================================
+    sonidos_golpe = []
+    sonidos_analizar = []
+    sonidos_borrar = []
+    sonidos_comenzar = []
+    sonidos_no = []
 
-        self.jugada = ""
+    _indice_golpe = 0
+    _indice_analizar = 0
+    _indice_borrar = 0
+    _indice_comenzar = 0
+    _indice_no = 0
 
-        # Indica si ya se ha mostrado el resultado
-        # de la última jugada
-        self.jugada_finalizada = False
+    # ==========================================
+    # SOUNDPOOL ANDROID
+    # ==========================================
 
-        # ==========================================
-        # TÍTULO
-        # ==========================================
+    _soundpool = None
+    _android_sounds = {}
+    _android_cargados = False
 
-        self.titulo = Entrada.crear_titulo()
+    # ==========================================
+    # CARGAR COPIAS DE LOS SONIDOS
+    # ==========================================
 
-        principal.add_widget(
-            self.titulo
-        )
+    sonidos_golpe = [
+        SoundLoader.load("sounds/golpe_seco.wav"),
+        SoundLoader.load("sounds/golpe_seco.wav"),
+        SoundLoader.load("sounds/golpe_seco.wav"),
+    ]
 
-        principal.add_widget(
-            Widget(
-                size_hint=(1, None),
-                height=dp(30)
-            )
-        )
+    sonidos_analizar = [
+        SoundLoader.load("sounds/analizar.wav"),
+        SoundLoader.load("sounds/analizar.wav"),
+        SoundLoader.load("sounds/analizar.wav"),
+    ]
 
-        # ==========================================
-        # PANEL DE BOTONES
-        # ==========================================
+    sonidos_borrar = [
+        SoundLoader.load("sounds/borrar.wav"),
+        SoundLoader.load("sounds/borrar.wav"),
+        SoundLoader.load("sounds/borrar.wav"),
+    ]
 
-        self.panel = PanelBotones(
-            callback=self.insertar_codigo
-        )
+    sonidos_comenzar = [
+        SoundLoader.load("sounds/comenzar.wav"),
+        SoundLoader.load("sounds/comenzar.wav"),
+        SoundLoader.load("sounds/comenzar.wav"),
+    ]
 
-        principal.add_widget(
-            self.panel
-        )
+    sonidos_no = [
+        SoundLoader.load("sounds/no.wav"),
+        SoundLoader.load("sounds/no.wav"),
+        SoundLoader.load("sounds/no.wav"),
+    ]
 
-        # ==========================================
-        # TEXTO INICIO JUGADA
-        # ==========================================
+    # ==========================================
+    # INICIALIZACIÓN
+    # ==========================================
 
-        self.label_jugada = Label(
-            text="[b]INICIO JUGADA:[/b]",
-            markup=True,
-            color=(1, 1, 1, 1),
-            size_hint=(1, None),
-            height=dp(22),
-            halign="left",
-            valign="middle"
+    def __init__(self, codigo="", icon=None, **kwargs):
+
+        self.codigo = codigo
+        self.icon = icon
+
+        super().__init__(**kwargs)
+
+        # ==================================
+        # FUENTE
+        # ==================================
+
+        self.font_name = (
+            "fonts/NotoSans-SemiBold.ttf"
         )
 
-        self.label_jugada.bind(
-            size=lambda w, s: setattr(
-                w,
-                "text_size",
-                w.size
-            )
+        # ==================================
+        # TEXTO
+        # ==================================
+
+        self.halign = "center"
+        self.valign = "middle"
+        self.line_height = 0.85
+        self.bold = True
+
+        if "font_size" not in kwargs:
+            self.font_size = "16sp"
+
+        self.color = (
+            1,
+            1,
+            1,
+            1
         )
 
-        principal.add_widget(
-            self.label_jugada
-        )
+        # ==================================
+        # FONDO ORIGINAL DE KIVY
+        # ==================================
 
-# ==========================================
-# VISOR GRÁFICO DE LA JUGADA
-# ==========================================
+        self.background_normal = ""
+        self.background_down = ""
 
-        ALTURA_MAXIMA = dp(250)
-        ALTURA_MINIMA = dp(60)
-
-        scroll = ScrollView(
-            size_hint=(1, None),
-            height=ALTURA_MINIMA,
-            do_scroll_x=False,
-            do_scroll_y=True
-        )
-
-        self.visor = VisorJugada(
-        size_hint=(1, None)
-        )
-
-# ------------------------------------------
-# FONDO DEL VISOR
-# ------------------------------------------
-        with self.visor.canvas.before:
-
-            Color(
-                0.7,
-                0.7,
-                0.7,
-                1
-            )
-
-            self.visor._bg = Rectangle()
-
-            self.visor.bind(
-                pos=lambda w, v: setattr(
-                    self.visor._bg,
-                    "pos",
-                    w.pos
-                ),
-                size=lambda w, v: setattr(
-                    self.visor._bg,
-                    "size",
-                    w.size
-                )
-            )
-        
-        scroll.add_widget(
-            self.visor
-        )
-
-        self.visor.conectar_scroll(
-            scroll
-        )
-        
-        principal.add_widget(
-            scroll
-        )
-
-        # ==========================================
-        # HISTORIAL / SALIDA
-        # ==========================================
-
-        self.salida = Salida(
-            size_hint=(1, None),
-            height=dp(180)
-        )
-
-        principal.add_widget(
-            self.salida
-        )
-
-        # ==========================================
-        # COMPROBAR + MARCADOR
-        # ==========================================
-
-        fila = BoxLayout(
-            orientation="horizontal",
-            size_hint=(1, None),
-            height=dp(70),
-            spacing=dp(10)
-        )
-
-        # ------------------------------------------
-        # BOTÓN ANALIZAR
-        # ------------------------------------------
-
-        self.boton_comprobar = IGButton(
-            text="ANALIZAR",
-            size_hint=(None, None),
-            width=dp(100),
-            height=dp(50),
-            font_size="12sp"
-        )
-
-        self.boton_comprobar.set_color(
-            (0.0, 0.65, 0.0, 1)
-        )
-
-        self.boton_comprobar.bind(
-            on_press=self.comprobar
-        )
-
-        # ------------------------------------------
-        # CONTENEDOR DEL BOTÓN
-        # ------------------------------------------
-
-        contenedor = AnchorLayout(
-            anchor_x="left",
-            anchor_y="center",
-            size_hint=(None, 1),
-            width=dp(120),
-            padding=(
-                0,
-                dp(10),
-                0,
-                0
-            )
-        )
-
-        contenedor.add_widget(
-            self.boton_comprobar
-        )
-
-        fila.add_widget(
-            contenedor
-        )
-
-        # ------------------------------------------
-        # MARCADOR
-        # ------------------------------------------
-
-        self.marcador = Marcador()
-
-        fila.add_widget(
-            self.marcador
-        )
-
-        principal.add_widget(
-            fila
-        )
-
-        # ==========================================
-        # BOTONES INFERIORES
-        # ==========================================
-
-        self.botones_inferiores = (
-            Entrada.crear_botones_inferiores(
-                self
-            )
-        )
-
-        principal.add_widget(
-            self.botones_inferiores
-        )
-
-        # ==========================================
-        # AJUSTE DINÁMICO DEL VISOR
-        # ==========================================
-        #
-        # El visor puede crecer, pero solamente
-        # dentro del espacio que queda disponible.
-        #
-        # De esta forma:
-        #
-        # - El título no desaparece.
-        # - La salida permanece visible.
-        # - El marcador permanece visible.
-        # - Los botones inferiores permanecen visibles.
-        # - Una jugada larga utiliza ScrollView.
-        #
-        # ==========================================
-
-        def ajustar_altura_visor(*args):
-
-            # --------------------------------------
-            # Alturas FIJAS que debemos conservar
-            # --------------------------------------
-
-            altura_titulo = self.titulo.height
-
-            altura_separador = dp(30)
-
-            altura_panel = self.panel.height
-
-            altura_label = dp(22)
-
-            altura_salida = dp(180)
-
-            altura_fila = dp(70)
-
-            altura_botones = (
-                self.botones_inferiores.height
-            )
-
-            # --------------------------------------
-            # ESPACIOS ENTRE LOS ELEMENTOS
-            # --------------------------------------
-            #
-            # principal tiene:
-            #
-            # padding arriba + abajo = 20
-            #
-            # y varios spacing de 10.
-            #
-            # Hay 7 elementos principales:
-            #
-            # 1 título
-            # 2 separador
-            # 3 panel
-            # 4 label
-            # 5 visor
-            # 6 salida
-            # 7 fila
-            # 8 botones inferiores
-            #
-            # Entre ellos hay 7 espacios.
-            #
-            # --------------------------------------
-
-            altura_espacios = (
-                dp(20) +
-                dp(70)
-            )
-
-            altura_fija = (
-                altura_titulo
-                + altura_separador
-                + altura_panel
-                + altura_label
-                + altura_salida
-                + altura_fila
-                + altura_botones
-                + altura_espacios
-            )
-
-            # --------------------------------------
-            # ESPACIO REAL DISPONIBLE PARA EL VISOR
-            # --------------------------------------
-
-            espacio_disponible = (
-                principal.height
-                - altura_fija
-            )
-
-            # --------------------------------------
-            # ALTURA FINAL DEL VISOR
-            # --------------------------------------
-
-            altura_final = min(
-                ALTURA_MAXIMA,
-                max(
-                    0,
-                    espacio_disponible
-                )
-            )
-
-            scroll.height = altura_final
-
-        # ==========================================
-        # ACTUALIZAR CUANDO CAMBIA LA ALTURA
-        # ==========================================
-
-        principal.bind(
-            height=ajustar_altura_visor
-        )
-
-        self.visor.bind(
-            height=ajustar_altura_visor
-        )
-
-        self.panel.bind(
-            height=ajustar_altura_visor
-        )
-
-        self.botones_inferiores.bind(
-            height=ajustar_altura_visor
-        )
-
-        # ------------------------------------------
-        # Primera actualización
-        # ------------------------------------------
-
-        Clock.schedule_once(
-            ajustar_altura_visor,
+        self.background_color = (
+            0,
+            0,
+            0,
             0
         )
 
-        # ==========================================
-        # LÓGICA
-        # ==========================================
-
-        self.logica = Logica(
-            self.mostrar,
-            self.salida.mostrar_resultado,
-            self.salida.mostrar_bloque_arriba
+        self.border = (
+            0,
+            0,
+            0,
+            0
         )
 
-        # ==========================================
-        # COMPROBAR BASE DE DATOS
-        # ==========================================
+        # ==================================
+        # COLOR REAL DEL BOTÓN
+        # ==================================
 
-        if not self.logica.bd_disponible:
+        self._color = (
+            0.30,
+            0.30,
+            0.30,
+            1
+        )
 
-            self.salida.mostrar(
-                "[color=ff0000][b]"
-                "ERROR CRÍTICO"
-                "[/b][/color]\n\n"
-                "No se ha encontrado la base de datos "
-                "'colisionables.db'.\n\n"
-                "La aplicación no puede continuar."
+        # ==================================
+        # TRANSFORMACIÓN DE LA ANIMACIÓN
+        # ==================================
+
+        with self.canvas.before:
+
+            self.push_matrix = PushMatrix()
+
+            self.translate = Translate(
+                x=0,
+                y=0
             )
 
-            self.bloquear_interfaz()
+            # ==================================
+            # FONDO
+            # ==================================
 
-        return principal
-
-    # ==========================================
-    # INSERTAR CÓDIGO
-    # ==========================================
-
-    def insertar_codigo(
-        self,
-        codigo
-    ):
-
-        # ==========================================
-        # SI LA JUGADA ANTERIOR YA TERMINÓ,
-        # AL PULSAR EL PRIMER BOTÓN DE LA NUEVA
-        # JUGADA SE BORRA AUTOMÁTICAMENTE
-        # ==========================================
-
-        if self.jugada_finalizada:
-
-            self.salida.borrar()
-            self.visor.limpiar()
-
-            self.logica.falta_terminar = False
-            self.logica.repite_saque = False
-            self.logica.posicion_resaltada = None
-
-            self.jugada_finalizada = False
-
-            self.jugada = ""
-
-            self.label_jugada.text = (
-                "[b]INICIO JUGADA:[/b]"
+            self.color_fondo = Color(
+                rgba=self._color
             )
 
-        # ==========================================
-        # SI LA PARTIDA ANTERIOR TERMINÓ
-        # ==========================================
+            self.fondo = RoundedRectangle(
+                pos=self.pos,
+                size=self.size,
+                radius=[dp(10)]
+            )
 
-        if Config.ganador:
+            self.pop_matrix = PopMatrix()
 
-            Config.tantoA = 0
-            Config.tantoB = 0
-            Config.juegoA = 0
-            Config.juegoB = 0
-            Config.ganador = False
+        self.bind(
+            pos=self._actualizar,
+            size=self._actualizar
+        )
 
-            self.marcador.reiniciar()
+        # ==================================
+        # FLECHA DE RETROCESO
+        # ==================================
 
-        # ==========================================
-        # BORRAR ÚLTIMO CÓDIGO
-        # ==========================================
+        if self.codigo == "←":
 
-        if codigo == "←":
+            with self.canvas.after:
 
-            if self.jugada:
+                self.color_flecha = Color(
+                    rgba=(0, 0, 0, 1)
+                )
 
-                if self.jugada[-2:] in (
-                    "JA",
-                    "JB",
-                    "MA",
-                    "MB",
-                    "TM",
-                    "BP"
-                ):
+                self.flecha = Line(
+                    points=[],
+                    width=dp(2),
+                    cap="square"
+                )
 
-                    self.jugada = (
-                        self.jugada[:-2]
-                    )
+            self.bind(
+                pos=self._actualizar_flecha,
+                size=self._actualizar_flecha
+            )
 
-                else:
+            self._actualizar_flecha()
 
-                    self.jugada = (
-                        self.jugada[:-1]
-                    )
+        # ==================================
+        # ICONO
+        # ==================================
 
-        # ==========================================
-        # BORRAR TODA LA SECUENCIA
-        # ==========================================
+        if self.icon:
 
-        elif codigo == "C":
+            self.text = ""
 
-            self.jugada = ""
+            self.imagen = Image(
+                source=self.icon,
+                size_hint=(None, None)
+            )
 
-        # ==========================================
-        # AÑADIR CÓDIGO
-        # ==========================================
+            self.add_widget(
+                self.imagen
+            )
 
-        else:
+            self.bind(
+                pos=self._actualizar_icono,
+                size=self._actualizar_icono
+            )
 
-            self.jugada += codigo
+            self._actualizar_icono()
 
-        # ==========================================
-        # MOSTRAR JUGADA QUE SE ESTÁ CONSTRUYENDO
-        # ==========================================
+        self.texture_update()
 
-        self.visor.mostrar(
-            self.jugada
+        # ==================================
+        # ANIMACIÓN DE PRESIÓN
+        # ==================================
+
+        self.bind(
+            on_press=self._animacion_presion
         )
 
     # ==========================================
-    # MOSTRAR
+    # INICIALIZAR SOUNDPOOL ANDROID
     # ==========================================
 
-    def mostrar(
-        self,
-        texto
-    ):
+    @classmethod
+    def _inicializar_android(cls):
 
-        self.salida.mostrar(
-            texto
-        )
-
-    # ==========================================
-    # BLOQUEAR INTERFAZ
-    # ==========================================
-
-    def bloquear_interfaz(self):
-
-        self.panel.disabled = True
-        self.panel.opacity = 0.35
-
-        self.boton_comprobar.disabled = True
-        self.boton_comprobar.opacity = 0.35
-
-        self.botones_inferiores.disabled = True
-        self.botones_inferiores.opacity = 0.35
-
-        self.visor.opacity = 0.35
-
-        self.marcador.opacity = 0.35
-
-    # ==========================================
-    # COMPROBAR
-    # ==========================================
-
-    def comprobar(
-        self,
-        instance
-    ):
+        if cls._android_cargados:
+            return
 
         try:
 
-            jugada = (
-                self.jugada
-                .strip()
-                .upper()
+            from jnius import autoclass
+
+            SoundPoolBuilder = autoclass(
+                "android.media.SoundPool$Builder"
             )
 
-            if not jugada:
-                return
+            AudioAttributesBuilder = autoclass(
+                "android.media.AudioAttributes$Builder"
+            )
 
-            # --------------------------------------
-            # SEPARADOR ENTRE JUGADAS
-            # --------------------------------------
+            AudioAttributes = autoclass(
+                "android.media.AudioAttributes"
+            )
 
-            if self.salida.tiene_texto():
-
-                self.mostrar("")
-
-            # --------------------------------------
-            # PROCESAR PUNTO
-            # --------------------------------------
-
-            correcta, posicion = (
-                self.logica.procesar_punto(
-                    jugada
+            audio_attributes = (
+                AudioAttributesBuilder()
+                .setUsage(
+                    AudioAttributes.USAGE_GAME
                 )
-            )
-
-            # --------------------------------------
-            # CAMBIAR TÍTULO
-            # --------------------------------------
-
-            self.label_jugada.text = (
-                "[b]RESULTADO JUGADA:[/b]"
-            )
-
-            # ======================================
-            # FALTA TERMINAR JUGADA
-            # ======================================
-
-            if self.logica.falta_terminar:
-
-                self.salida.mostrar_resultado(
-                    falta_terminar=True
+                .setContentType(
+                    AudioAttributes.CONTENT_TYPE_SONIFICATION
                 )
+                .build()
+            )
 
-            # ======================================
-            # RED - SE REPITE SAQUE
-            # ======================================
-
-            elif self.logica.repite_saque:
-
-                self.salida.mostrar_resultado(
-                    repite_saque=True
+            cls._soundpool = (
+                SoundPoolBuilder()
+                .setMaxStreams(8)
+                .setAudioAttributes(
+                    audio_attributes
                 )
-
-            # ======================================
-            # VISOR DE JUGADA
-            # ======================================
-
-            self.visor.mostrar_resultado(
-                jugada,
-                correcta,
-                posicion,
-                self.logica.falta_terminar
+                .build()
             )
 
-            # ======================================
-            # MARCADOR
-            # ======================================
-
-            self.marcador.actualizar(
-                Config.tantoA,
-                Config.tantoB,
-                Config.juegoA,
-                Config.juegoB
+            Environment = autoclass(
+                "android.os.Environment"
             )
 
-            # ======================================
-            # LIMPIAR JUGADA
-            # ======================================
+            activity = autoclass(
+                "org.kivy.android.PythonActivity"
+            )
 
-            self.jugada = ""
-            self.jugada_finalizada = True
+            context = activity.mActivity
+
+            # ----------------------------------
+            # Cargar sonidos
+            # ----------------------------------
+
+            nombres = {
+                "golpe": "sounds/golpe_seco.wav",
+                "analizar": "sounds/analizar.wav",
+                "borrar": "sounds/borrar.wav",
+                "comenzar": "sounds/comenzar.wav",
+                "no": "sounds/no.wav",
+            }
+
+            for nombre, archivo in nombres.items():
+
+                try:
+
+                    asset_manager = (
+                        context.getAssets()
+                    )
+
+                    asset_file = (
+                        asset_manager.openFd(
+                            archivo
+                        )
+                    )
+
+                    sound_id = cls._soundpool.load(
+                        asset_file.getFileDescriptor(),
+                        asset_file.getStartOffset(),
+                        asset_file.getLength(),
+                        1
+                    )
+
+                    cls._android_sounds[
+                        nombre
+                    ] = sound_id
+
+                    asset_file.close()
+
+                except Exception:
+
+                    pass
+
+            cls._android_cargados = True
 
         except Exception:
 
-            import traceback
-
-            self.mostrar("")
-
-            self.mostrar(
-                "[color=ff0000][b]"
-                "ERROR"
-                "[/b][/color]"
-            )
-
-            self.mostrar(
-                traceback.format_exc()
-            )
+            cls._soundpool = None
+            cls._android_cargados = True
 
     # ==========================================
-    # BORRAR
+    # REPRODUCIR SOUNDPOOL ANDROID
     # ==========================================
 
-    def borrar(
-        self,
-        instance
+    @classmethod
+    def _reproducir_android(cls, nombre):
+
+        if cls._soundpool is None:
+            return False
+
+        sound_id = cls._android_sounds.get(
+            nombre
+        )
+
+        if not sound_id:
+            return False
+
+        try:
+
+            cls._soundpool.play(
+                sound_id,
+                1.0,
+                1.0,
+                1,
+                0,
+                1.0
+            )
+
+            return True
+
+        except Exception:
+
+            return False
+
+    # ==========================================
+    # REPRODUCIR SONIDO
+    # ==========================================
+
+    @classmethod
+    def _reproducir_sonido(
+        cls,
+        sonidos,
+        atributo,
+        android_nombre=None
     ):
 
-        self.salida.borrar()
-        self.visor.limpiar()
+        # ==================================
+        # ANDROID
+        # ==================================
 
-        self.jugada = ""
-        self.jugada_finalizada = False
+        if android_nombre is not None:
 
-        self.label_jugada.text = (
-            "[b]INICIO JUGADA:[/b]"
+            cls._inicializar_android()
+
+            if cls._reproducir_android(
+                android_nombre
+            ):
+
+                return
+
+        # ==================================
+        # PC / FALLBACK
+        # ==================================
+
+        if not sonidos:
+            return
+
+        indice = getattr(
+            cls,
+            atributo
         )
+
+        sonido = sonidos[indice]
+
+        indice += 1
+
+        if indice >= len(sonidos):
+            indice = 0
+
+        setattr(
+            cls,
+            atributo,
+            indice
+        )
+
+        if sonido is not None:
+            sonido.play()
 
     # ==========================================
-    # NUEVA PARTIDA
+    # OBTENER Y REPRODUCIR SONIDO
     # ==========================================
 
-    def nueva_partida(
-        self,
-        instance
-    ):
+    def _reproducir_sonido_boton(self):
 
-        contenido = BoxLayout(
-            orientation="vertical",
-            spacing=dp(10),
-            padding=dp(10)
-        )
+        texto = self.text.strip().upper()
 
-        mensaje = Label(
-            text="¿Comenzar una nueva partida?"
-        )
+        # ==================================
+        # ANALIZAR
+        # ==================================
 
-        contenido.add_widget(
-            mensaje
-        )
+        if texto == "ANALIZAR":
 
-        botones = BoxLayout(
-            size_hint=(1, None),
-            height=dp(45),
-            spacing=dp(10)
-        )
-
-        popup = Popup(
-            title="Confirmación",
-            content=contenido,
-            size_hint=(None, None),
-            size=(
-                dp(320),
-                dp(180)
-            ),
-            auto_dismiss=False
-        )
-
-        boton_si = IGButton(
-            text="Sí"
-        )
-
-        boton_si.set_color(
-            (0.0, 0.65, 0.0, 1)
-        )
-
-        boton_no = IGButton(
-            text="No"
-        )
-
-        boton_no.set_color(
-            (0.8, 0.0, 0.0, 1)
-        )
-
-        # ------------------------------------------
-        # CONFIRMAR NUEVA PARTIDA
-        # ------------------------------------------
-
-        def confirmar(_):
-
-            popup.dismiss()
-
-            self.salida.borrar()
-            self.visor.limpiar()
-
-            self.jugada = ""
-            self.jugada_finalizada = False
-
-            self.label_jugada.text = (
-                "[b]INICIO JUGADA:[/b]"
+            self._reproducir_sonido(
+                IGButton.sonidos_analizar,
+                "_indice_analizar",
+                "analizar"
             )
 
-            Config.tantoA = 0
-            Config.tantoB = 0
-            Config.juegoA = 0
-            Config.juegoB = 0
-            Config.ganador = False
+            return
 
-            self.marcador.reiniciar()
+        # ==================================
+        # BORRAR
+        # ==================================
 
-        boton_si.bind(
-            on_press=confirmar
-        )
-
-        boton_no.bind(
-            on_press=lambda *_:
-            popup.dismiss()
-        )
-
-        botones.add_widget(
-            boton_si
-        )
-
-        botones.add_widget(
-            boton_no
-        )
-
-        contenido.add_widget(
-            botones
-        )
-
-        popup.open()
-
-    # ==========================================
-    # BORRAR ÚLTIMO
-    # ==========================================
-
-    def borrar_ultimo(self):
-
-        if (
-            len(self.jugada) >= 2
-            and self.jugada[-2:] in (
-                "JA",
-                "JB",
-                "MA",
-                "MB",
-                "TM",
-                "BP"
-            )
+        if self.codigo in (
+            "C",
+            "←",
+            "BORRAR",
+            "BORRAR_PANTALLA"
         ):
 
-            self.jugada = (
-                self.jugada[:-2]
+            self._reproducir_sonido(
+                IGButton.sonidos_borrar,
+                "_indice_borrar",
+                "borrar"
             )
 
-        else:
+            return
 
-            self.jugada = (
-                self.jugada[:-1]
+        # ==================================
+        # BORRAR PANTALLA
+        # ==================================
+
+        if "BORRAR PANTALLA" in texto:
+
+            self._reproducir_sonido(
+                IGButton.sonidos_borrar,
+                "_indice_borrar",
+                "borrar"
             )
 
-        self.visor.mostrar(
-            self.jugada
+            return
+
+        # ==================================
+        # NUEVA PARTIDA
+        # ==================================
+
+        if texto == "NUEVA PARTIDA":
+
+            self._reproducir_sonido(
+                IGButton.sonidos_comenzar,
+                "_indice_comenzar",
+                "comenzar"
+            )
+
+            return
+
+        # ==================================
+        # SÍ
+        # ==================================
+
+        if texto in (
+            "SI",
+            "SÍ"
+        ):
+
+            self._reproducir_sonido(
+                IGButton.sonidos_comenzar,
+                "_indice_comenzar",
+                "comenzar"
+            )
+
+            return
+
+        # ==================================
+        # NO
+        # ==================================
+
+        if texto == "NO":
+
+            self._reproducir_sonido(
+                IGButton.sonidos_no,
+                "_indice_no",
+                "no"
+            )
+
+            return
+
+        # ==================================
+        # SONIDO NORMAL
+        # ==================================
+
+        self._reproducir_sonido(
+            IGButton.sonidos_golpe,
+            "_indice_golpe",
+            "golpe"
         )
 
     # ==========================================
-    # LIMPIAR JUGADA
+    # ACTUALIZAR FONDO
     # ==========================================
 
-    def limpiar_jugada(self):
+    def _actualizar(self, *args):
 
-        self.jugada = ""
+        self.fondo.pos = self.pos
+        self.fondo.size = self.size
 
-        self.visor.limpiar()
+    # ==========================================
+    # ACTUALIZAR FLECHA
+    # ==========================================
 
-        self.label_jugada.text = (
-            "[b]INICIO JUGADA:[/b]"
+    def _actualizar_flecha(self, *args):
+
+        if self.codigo != "←":
+            return
+
+        x = self.center_x
+        y = self.center_y
+
+        largo = (
+            min(
+                self.width,
+                self.height
+            ) * 0.25
         )
 
+        punta = dp(8)
 
-# ==========================================
-# EJECUCIÓN
-# ==========================================
+        self.flecha.points = [
 
-if __name__ == "__main__":
-    TenisMesaApp().run()
+            x + largo,
+            y,
+            x - largo,
+            y,
+
+            x - largo,
+            y,
+            x - largo + punta,
+            y + punta,
+
+            x - largo,
+            y,
+            x - largo + punta,
+            y - punta,
+        ]
+
+    # ==========================================
+    # COLOR DEL FONDO
+    # ==========================================
+
+    def set_color(self, color):
+
+        self._color = color
+
+        self.color_fondo.rgba = color
+
+    # ==========================================
+    # COLOR DEL TEXTO
+    # ==========================================
+
+    def set_text_color(self, color):
+
+        self.color = color
+
+    # ==========================================
+    # CÓDIGO
+    # ==========================================
+
+    def set_codigo(self, codigo):
+
+        self.codigo = codigo
+
+    # ==========================================
+    # ACTUALIZAR ICONO
+    # ==========================================
+
+    def _actualizar_icono(self, *args):
+
+        if not self.icon:
+            return
+
+        lado = (
+            min(
+                self.width,
+                self.height
+            ) * 0.55
+        )
+
+        self.imagen.size = (
+            lado,
+            lado
+        )
+
+        self.imagen.center = self.center
+
+    # ==========================================
+    # ANIMACIÓN DE PRESIÓN + SONIDO
+    # ==========================================
+
+    def _animacion_presion(self, *args):
+
+        # ==================================
+        # SONIDO INMEDIATO
+        # ==================================
+
+        self._reproducir_sonido_boton()
+
+        # ==================================
+        # CANCELAR ANIMACIÓN ANTERIOR
+        # ==================================
+
+        Animation.cancel_all(
+            self.translate
+        )
+
+        # ==================================
+        # VOLVER A POSICIÓN ORIGINAL
+        # ==================================
+
+        self.translate.y = 0
+
+        # ==================================
+        # PRESIÓN
+        # ==================================
+
+        animacion = Animation(
+            y=-dp(5),
+            duration=0.05
+        )
+
+        # ==================================
+        # REGRESO
+        # ==================================
+
+        animacion += Animation(
+            y=0,
+            duration=0.10
+        )
+
+        # ==================================
+        # EJECUTAR
+        # ==================================
+
+        animacion.start(
+            self.translate
+        )
