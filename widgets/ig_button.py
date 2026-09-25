@@ -17,13 +17,23 @@ from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.metrics import dp
 from kivy.animation import Animation
-from kivy.core.audio import SoundLoader
+from kivy.clock import Clock
+from kivy.utils import platform
+
+
+# ==========================================
+# SOUNDLOADER SOLO PARA PC
+# ==========================================
+
+if platform != "android":
+
+    from kivy.core.audio import SoundLoader
 
 
 class IGButton(Button):
 
     # ==========================================
-    # CARGA DE SONIDOS
+    # SONIDOS
     # ==========================================
 
     sonidos_golpe = []
@@ -39,38 +49,82 @@ class IGButton(Button):
     _indice_no = 0
 
     # ==========================================
-    # CARGAR COPIAS DE LOS SONIDOS
+    # SOUNDPOOL ANDROID
     # ==========================================
 
-    sonidos_golpe = [
-        SoundLoader.load("sounds/golpe_seco.wav"),
-        SoundLoader.load("sounds/golpe_seco.wav"),
-        SoundLoader.load("sounds/golpe_seco.wav"),
-    ]
+    _soundpool = None
 
-    sonidos_analizar = [
-        SoundLoader.load("sounds/analizar.wav"),
-        SoundLoader.load("sounds/analizar.wav"),
-        SoundLoader.load("sounds/analizar.wav"),
-    ]
+    _android_sounds = {}
 
-    sonidos_borrar = [
-        SoundLoader.load("sounds/borrar.wav"),
-        SoundLoader.load("sounds/borrar.wav"),
-        SoundLoader.load("sounds/borrar.wav"),
-    ]
+    _android_inicializado = False
 
-    sonidos_comenzar = [
-        SoundLoader.load("sounds/comenzar.wav"),
-        SoundLoader.load("sounds/comenzar.wav"),
-        SoundLoader.load("sounds/comenzar.wav"),
-    ]
+    # ==========================================
+    # CARGAR SONIDOS EN PC
+    #
+    # EN ANDROID NO SE UTILIZA SOUNDLOADER
+    # ==========================================
 
-    sonidos_no = [
-        SoundLoader.load("sounds/no.wav"),
-        SoundLoader.load("sounds/no.wav"),
-        SoundLoader.load("sounds/no.wav"),
-    ]
+    if platform != "android":
+
+        sonidos_golpe = [
+            SoundLoader.load(
+                "sounds/golpe_seco.wav"
+            ),
+            SoundLoader.load(
+                "sounds/golpe_seco.wav"
+            ),
+            SoundLoader.load(
+                "sounds/golpe_seco.wav"
+            ),
+        ]
+
+        sonidos_analizar = [
+            SoundLoader.load(
+                "sounds/analizar.wav"
+            ),
+            SoundLoader.load(
+                "sounds/analizar.wav"
+            ),
+            SoundLoader.load(
+                "sounds/analizar.wav"
+            ),
+        ]
+
+        sonidos_borrar = [
+            SoundLoader.load(
+                "sounds/borrar.wav"
+            ),
+            SoundLoader.load(
+                "sounds/borrar.wav"
+            ),
+            SoundLoader.load(
+                "sounds/borrar.wav"
+            ),
+        ]
+
+        sonidos_comenzar = [
+            SoundLoader.load(
+                "sounds/comenzar.wav"
+            ),
+            SoundLoader.load(
+                "sounds/comenzar.wav"
+            ),
+            SoundLoader.load(
+                "sounds/comenzar.wav"
+            ),
+        ]
+
+        sonidos_no = [
+            SoundLoader.load(
+                "sounds/no.wav"
+            ),
+            SoundLoader.load(
+                "sounds/no.wav"
+            ),
+            SoundLoader.load(
+                "sounds/no.wav"
+            ),
+        ]
 
     # ==========================================
     # INICIALIZACIÓN
@@ -87,6 +141,14 @@ class IGButton(Button):
         self.icon = icon
 
         super().__init__(**kwargs)
+
+        # ==================================
+        # INICIALIZAR AUDIO ANDROID
+        # ==================================
+
+        if platform == "android":
+
+            IGButton._inicializar_android()
 
         # ==================================
         # FUENTE
@@ -241,6 +303,176 @@ class IGButton(Button):
         )
 
     # ==========================================
+    # INICIALIZAR SOUNDPOOL ANDROID
+    # ==========================================
+
+    @classmethod
+    def _inicializar_android(cls):
+
+        if cls._android_inicializado:
+            return
+
+        cls._android_inicializado = True
+
+        try:
+
+            from jnius import autoclass
+            from kivy.resources import resource_find
+
+            SoundPoolBuilder = autoclass(
+                "android.media.SoundPool$Builder"
+            )
+
+            AudioAttributesBuilder = autoclass(
+                "android.media.AudioAttributes$Builder"
+            )
+
+            AudioAttributes = autoclass(
+                "android.media.AudioAttributes"
+            )
+
+            # ==================================
+            # ATRIBUTOS DE AUDIO
+            # ==================================
+
+            atributos = (
+                AudioAttributesBuilder()
+                .setUsage(
+                    AudioAttributes.USAGE_GAME
+                )
+                .setContentType(
+                    AudioAttributes.CONTENT_TYPE_SONIFICATION
+                )
+                .build()
+            )
+
+            # ==================================
+            # SOUNDPOOL
+            # ==================================
+
+            cls._soundpool = (
+                SoundPoolBuilder()
+                .setAudioAttributes(
+                    atributos
+                )
+                .setMaxStreams(8)
+                .build()
+            )
+
+            # ==================================
+            # ARCHIVOS
+            # ==================================
+
+            archivos = {
+
+                "golpe":
+                    "sounds/golpe_seco.wav",
+
+                "analizar":
+                    "sounds/analizar.wav",
+
+                "borrar":
+                    "sounds/borrar.wav",
+
+                "comenzar":
+                    "sounds/comenzar.wav",
+
+                "no":
+                    "sounds/no.wav",
+            }
+
+            # ==================================
+            # CARGAR SONIDOS
+            # ==================================
+
+            for nombre, archivo in archivos.items():
+
+                ruta = resource_find(
+                    archivo
+                )
+
+                if ruta:
+
+                    try:
+
+                        sound_id = (
+                            cls._soundpool.load(
+                                ruta,
+                                1
+                            )
+                        )
+
+                        if sound_id:
+
+                            cls._android_sounds[
+                                nombre
+                            ] = sound_id
+
+                    except Exception:
+
+                        pass
+
+        except Exception:
+
+            cls._soundpool = None
+
+    # ==========================================
+    # REPRODUCIR SOUNDPOOL
+    # ==========================================
+
+    @classmethod
+    def _reproducir_android(
+        cls,
+        nombre,
+        intento=0
+    ):
+
+        if cls._soundpool is None:
+            return
+
+        sound_id = cls._android_sounds.get(
+            nombre
+        )
+
+        if not sound_id:
+            return
+
+        try:
+
+            stream_id = cls._soundpool.play(
+                sound_id,
+                1.0,
+                1.0,
+                1,
+                0,
+                1.0
+            )
+
+            # ==================================
+            # SI TODAVÍA NO ESTÁ CARGADO
+            #
+            # SoundPool.load() es asíncrono.
+            # Reintentamos rápidamente.
+            # ==================================
+
+            if stream_id == 0:
+
+                if intento < 10:
+
+                    Clock.schedule_once(
+                        lambda dt:
+                        cls._reproducir_android(
+                            nombre,
+                            intento + 1
+                        ),
+                        0.02
+                    )
+
+        except Exception:
+
+            pass
+
+    # ==========================================
     # REPRODUCIR SONIDO
     # ==========================================
 
@@ -248,8 +480,25 @@ class IGButton(Button):
     def _reproducir_sonido(
         cls,
         sonidos,
-        atributo
+        atributo,
+        android_nombre=None
     ):
+
+        # ==================================
+        # ANDROID
+        # ==================================
+
+        if platform == "android":
+
+            cls._reproducir_android(
+                android_nombre
+            )
+
+            return
+
+        # ==================================
+        # PC
+        # ==================================
 
         if not sonidos:
             return
@@ -298,7 +547,8 @@ class IGButton(Button):
 
             self._reproducir_sonido(
                 IGButton.sonidos_analizar,
-                "_indice_analizar"
+                "_indice_analizar",
+                "analizar"
             )
 
             return
@@ -316,7 +566,8 @@ class IGButton(Button):
 
             self._reproducir_sonido(
                 IGButton.sonidos_borrar,
-                "_indice_borrar"
+                "_indice_borrar",
+                "borrar"
             )
 
             return
@@ -329,7 +580,8 @@ class IGButton(Button):
 
             self._reproducir_sonido(
                 IGButton.sonidos_borrar,
-                "_indice_borrar"
+                "_indice_borrar",
+                "borrar"
             )
 
             return
@@ -342,7 +594,8 @@ class IGButton(Button):
 
             self._reproducir_sonido(
                 IGButton.sonidos_comenzar,
-                "_indice_comenzar"
+                "_indice_comenzar",
+                "comenzar"
             )
 
             return
@@ -358,7 +611,8 @@ class IGButton(Button):
 
             self._reproducir_sonido(
                 IGButton.sonidos_comenzar,
-                "_indice_comenzar"
+                "_indice_comenzar",
+                "comenzar"
             )
 
             return
@@ -371,18 +625,20 @@ class IGButton(Button):
 
             self._reproducir_sonido(
                 IGButton.sonidos_no,
-                "_indice_no"
+                "_indice_no",
+                "no"
             )
 
             return
 
         # ==================================
         # SONIDO NORMAL
-        # ==================================
+        # ==========================================
 
         self._reproducir_sonido(
             IGButton.sonidos_golpe,
-            "_indice_golpe"
+            "_indice_golpe",
+            "golpe"
         )
 
     # ==========================================
