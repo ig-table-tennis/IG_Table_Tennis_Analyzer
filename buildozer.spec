@@ -4,7 +4,7 @@
 # DATOS DE LA APLICACIÓN
 # ==========================================================
 
-title = IG Table Tennis Analyzer
+title = IGTTA
 package.name = igtabletennisanalyzer
 package.domain = com.igtabletennis
 
