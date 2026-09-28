@@ -7,8 +7,6 @@
 from kivy.app import App
 from kivy.metrics import dp
 from kivy.clock import Clock
-from kivy.core.window import Window
-from kivy.graphics import Color, Rectangle
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
@@ -30,8 +28,6 @@ from logica import Logica, Config
 class TenisMesaApp(App):
 
     def build(self):
-
-        Window.clearcolor = (0, 0, 0, 1)
 
         # ==========================================
         # VENTANA PRINCIPAL
@@ -109,8 +105,8 @@ class TenisMesaApp(App):
         )
 
         # ==========================================
-        # VISOR GRÁFICO DE LA JUGADA
-        # ==========================================
+# VISOR GRÁFICO DE LA JUGADA
+# ==========================================
 
         ALTURA_MAXIMA = dp(250)
         ALTURA_MINIMA = dp(60)
@@ -123,14 +119,16 @@ class TenisMesaApp(App):
         )
 
         self.visor = VisorJugada(
-            size_hint=(1, None)
+        size_hint=(1, None)
         )
 
-        # ------------------------------------------
-        # FONDO DEL VISOR
-        # ------------------------------------------
+# ------------------------------------------
+# FONDO DEL VISOR
+# ------------------------------------------
 
         with self.visor.canvas.before:
+
+            from kivy.graphics import Color, Rectangle
 
             Color(
                 0.7,
@@ -143,16 +141,16 @@ class TenisMesaApp(App):
 
             self.visor.bind(
                 pos=lambda w, v: setattr(
-                    self.visor._bg,
-                    "pos",
-                    w.pos
-                ),
-                size=lambda w, v: setattr(
-                    self.visor._bg,
-                    "size",
-                    w.size
-                )
+                self.visor._bg,
+                "pos",
+                w.pos
+            ),
+            size=lambda w, v: setattr(
+                self.visor._bg,
+                "size",
+                w.size
             )
+        )
 
         scroll.add_widget(
             self.visor
@@ -161,7 +159,7 @@ class TenisMesaApp(App):
         self.visor.conectar_scroll(
             scroll
         )
-
+        
         principal.add_widget(
             scroll
         )
@@ -266,6 +264,19 @@ class TenisMesaApp(App):
         # ==========================================
         # AJUSTE DINÁMICO DEL VISOR
         # ==========================================
+        #
+        # El visor puede crecer, pero solamente
+        # dentro del espacio que queda disponible.
+        #
+        # De esta forma:
+        #
+        # - El título no desaparece.
+        # - La salida permanece visible.
+        # - El marcador permanece visible.
+        # - Los botones inferiores permanecen visibles.
+        # - Una jugada larga utiliza ScrollView.
+        #
+        # ==========================================
 
         def ajustar_altura_visor(*args):
 
@@ -291,6 +302,27 @@ class TenisMesaApp(App):
 
             # --------------------------------------
             # ESPACIOS ENTRE LOS ELEMENTOS
+            # --------------------------------------
+            #
+            # principal tiene:
+            #
+            # padding arriba + abajo = 20
+            #
+            # y varios spacing de 10.
+            #
+            # Hay 7 elementos principales:
+            #
+            # 1 título
+            # 2 separador
+            # 3 panel
+            # 4 label
+            # 5 visor
+            # 6 salida
+            # 7 fila
+            # 8 botones inferiores
+            #
+            # Entre ellos hay 7 espacios.
+            #
             # --------------------------------------
 
             altura_espacios = (
@@ -325,7 +357,7 @@ class TenisMesaApp(App):
             altura_final = min(
                 ALTURA_MAXIMA,
                 max(
-                    0,
+                    ALTURA_MINIMA,
                     espacio_disponible
                 )
             )
@@ -400,7 +432,9 @@ class TenisMesaApp(App):
     ):
 
         # ==========================================
-        # SI LA JUGADA ANTERIOR YA TERMINÓ
+        # SI LA JUGADA ANTERIOR YA TERMINÓ,
+        # AL PULSAR EL PRIMER BOTÓN DE LA NUEVA
+        # JUGADA SE BORRA AUTOMÁTICAMENTE
         # ==========================================
 
         if self.jugada_finalizada:
@@ -478,7 +512,7 @@ class TenisMesaApp(App):
             self.jugada += codigo
 
         # ==========================================
-        # MOSTRAR JUGADA
+        # MOSTRAR JUGADA QUE SE ESTÁ CONSTRUYENDO
         # ==========================================
 
         self.visor.mostrar(
@@ -528,6 +562,9 @@ class TenisMesaApp(App):
 
         try:
 
+            # Detener cualquier parpadeo anterior
+            self.marcador.detener_animacion()
+            
             jugada = (
                 self.jugada
                 .strip()
@@ -549,6 +586,11 @@ class TenisMesaApp(App):
             # PROCESAR PUNTO
             # --------------------------------------
 
+            tantoA_antes = Config.tantoA
+            tantoB_antes = Config.tantoB
+            juegoA_antes = Config.juegoA
+            juegoB_antes = Config.juegoB
+            
             correcta, posicion = (
                 self.logica.procesar_punto(
                     jugada
@@ -593,7 +635,7 @@ class TenisMesaApp(App):
                 posicion,
                 self.logica.falta_terminar
             )
-
+            
             # ======================================
             # MARCADOR
             # ======================================
@@ -605,6 +647,34 @@ class TenisMesaApp(App):
                 Config.juegoB
             )
 
+            if Config.tantoA > tantoA_antes and Config.tantoA > 0:
+
+                Clock.schedule_once(
+                    lambda dt: self.marcador.parpadear_A(),
+                    0
+                )
+
+            elif Config.tantoB > tantoB_antes and Config.tantoB > 0:
+
+                Clock.schedule_once(
+                    lambda dt: self.marcador.parpadear_B(),
+                    0
+                )
+
+            elif Config.juegoA > juegoA_antes:
+
+                Clock.schedule_once(
+                    lambda dt: self.marcador.parpadear_juego_A(),
+                    0
+                )
+
+            elif Config.juegoB > juegoB_antes:
+
+                Clock.schedule_once(
+                    lambda dt: self.marcador.parpadear_juego_B(),
+                    0
+                )
+           
             # ======================================
             # LIMPIAR JUGADA
             # ======================================
@@ -734,7 +804,8 @@ class TenisMesaApp(App):
         )
 
         boton_no.bind(
-            on_press=lambda *_: popup.dismiss()
+            on_press=lambda *_:
+            popup.dismiss()
         )
 
         botones.add_widget(
