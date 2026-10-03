@@ -29,31 +29,20 @@ class TenisMesaApp(App):
 
     def build(self):
 
-        # ==========================================
-        # VENTANA PRINCIPAL
-        # ==========================================
-
         principal = BoxLayout(
             orientation="vertical",
             padding=dp(10),
             spacing=dp(10)
         )
 
-        # ==========================================
-        # VARIABLES
-        # ==========================================
-
         self.jugada = ""
-
-        # Indica si ya se ha mostrado el resultado
-        # de la última jugada
         self.jugada_finalizada = False
 
         # ==========================================
-        # TÍTULO
+        # TÍTULO + BOTÓN AYUDA
         # ==========================================
 
-        self.titulo = Entrada.crear_titulo()
+        self.titulo = Entrada.crear_titulo(self)
 
         principal.add_widget(
             self.titulo
@@ -105,8 +94,8 @@ class TenisMesaApp(App):
         )
 
         # ==========================================
-# VISOR GRÁFICO DE LA JUGADA
-# ==========================================
+        # VISOR GRÁFICO DE LA JUGADA
+        # ==========================================
 
         ALTURA_MAXIMA = dp(250)
         ALTURA_MINIMA = dp(60)
@@ -119,12 +108,12 @@ class TenisMesaApp(App):
         )
 
         self.visor = VisorJugada(
-        size_hint=(1, None)
+            size_hint=(1, None)
         )
 
-# ------------------------------------------
-# FONDO DEL VISOR
-# ------------------------------------------
+        # ------------------------------------------
+        # FONDO DEL VISOR
+        # ------------------------------------------
 
         with self.visor.canvas.before:
 
@@ -141,16 +130,16 @@ class TenisMesaApp(App):
 
             self.visor.bind(
                 pos=lambda w, v: setattr(
-                self.visor._bg,
-                "pos",
-                w.pos
-            ),
-            size=lambda w, v: setattr(
-                self.visor._bg,
-                "size",
-                w.size
+                    self.visor._bg,
+                    "pos",
+                    w.pos
+                ),
+                size=lambda w, v: setattr(
+                    self.visor._bg,
+                    "size",
+                    w.size
+                )
             )
-        )
 
         scroll.add_widget(
             self.visor
@@ -159,7 +148,7 @@ class TenisMesaApp(App):
         self.visor.conectar_scroll(
             scroll
         )
-        
+
         principal.add_widget(
             scroll
         )
@@ -209,7 +198,7 @@ class TenisMesaApp(App):
         )
 
         # ------------------------------------------
-        # CONTENEDOR DEL BOTÓN
+        # CONTENEDOR DEL BOTÓN ANALIZAR
         # ------------------------------------------
 
         contenedor = AnchorLayout(
@@ -264,25 +253,8 @@ class TenisMesaApp(App):
         # ==========================================
         # AJUSTE DINÁMICO DEL VISOR
         # ==========================================
-        #
-        # El visor puede crecer, pero solamente
-        # dentro del espacio que queda disponible.
-        #
-        # De esta forma:
-        #
-        # - El título no desaparece.
-        # - La salida permanece visible.
-        # - El marcador permanece visible.
-        # - Los botones inferiores permanecen visibles.
-        # - Una jugada larga utiliza ScrollView.
-        #
-        # ==========================================
 
         def ajustar_altura_visor(*args):
-
-            # --------------------------------------
-            # Alturas FIJAS que debemos conservar
-            # --------------------------------------
 
             altura_titulo = self.titulo.height
 
@@ -300,31 +272,6 @@ class TenisMesaApp(App):
                 self.botones_inferiores.height
             )
 
-            # --------------------------------------
-            # ESPACIOS ENTRE LOS ELEMENTOS
-            # --------------------------------------
-            #
-            # principal tiene:
-            #
-            # padding arriba + abajo = 20
-            #
-            # y varios spacing de 10.
-            #
-            # Hay 7 elementos principales:
-            #
-            # 1 título
-            # 2 separador
-            # 3 panel
-            # 4 label
-            # 5 visor
-            # 6 salida
-            # 7 fila
-            # 8 botones inferiores
-            #
-            # Entre ellos hay 7 espacios.
-            #
-            # --------------------------------------
-
             altura_espacios = (
                 dp(20) +
                 dp(70)
@@ -341,18 +288,10 @@ class TenisMesaApp(App):
                 + altura_espacios
             )
 
-            # --------------------------------------
-            # ESPACIO REAL DISPONIBLE PARA EL VISOR
-            # --------------------------------------
-
             espacio_disponible = (
                 principal.height
                 - altura_fija
             )
-
-            # --------------------------------------
-            # ALTURA FINAL DEL VISOR
-            # --------------------------------------
 
             altura_final = min(
                 ALTURA_MAXIMA,
@@ -372,10 +311,6 @@ class TenisMesaApp(App):
             height=ajustar_altura_visor
         )
 
-        self.visor.bind(
-            height=ajustar_altura_visor
-        )
-
         self.panel.bind(
             height=ajustar_altura_visor
         )
@@ -383,10 +318,6 @@ class TenisMesaApp(App):
         self.botones_inferiores.bind(
             height=ajustar_altura_visor
         )
-
-        # ------------------------------------------
-        # Primera actualización
-        # ------------------------------------------
 
         Clock.schedule_once(
             ajustar_altura_visor,
@@ -422,6 +353,413 @@ class TenisMesaApp(App):
 
         return principal
 
+        # ==========================================
+    # MOSTRAR AYUDA
+    # ==========================================
+
+    def mostrar_ayuda(
+        self,
+        instance
+    ):
+
+        # ==========================================
+        # CONTENEDOR PRINCIPAL
+        # ==========================================
+
+        contenido = BoxLayout(
+            orientation="vertical",
+            padding=dp(10),
+            spacing=dp(10)
+        )
+
+        # ==========================================
+        # POPUP
+        # ==========================================
+
+        popup = Popup(
+            title="Ayuda",
+            content=contenido,
+            size_hint=(None, None),
+            size=(
+                dp(350),
+                dp(600)
+            ),
+            auto_dismiss=True
+        )
+
+        # ==========================================
+        # TEXTOS DE LA AYUDA
+        # ==========================================
+
+        textos = {
+
+            "¿QUÉ ES IGTTA?": (
+                "[b]¿QUÉ ES IGTTA?[/b]\n\n"
+
+                "[b]IG Table Tennis Analyzer (IGTTA)[/b] "
+                "es una herramienta diseñada para analizar "
+                "jugadas de tenis de mesa y simular una partida "
+                "entre dos jugadores: A y B.\n\n"
+
+                "El programa permite registrar, paso a paso, "
+                "los contactos que se producen durante cada "
+                "jugada y analizar la secuencia para determinar "
+                "qué ocurre en el punto.\n\n"
+
+                "Además, IGTTA lleva automáticamente el "
+                "marcador de tantos y juegos hasta determinar "
+                "el ganador de la partida."
+            ),
+
+            "¿CÓMO SE SIMULA UNA PARTIDA?": (
+                "[b]¿CÓMO SE SIMULA UNA PARTIDA?[/b]\n\n"
+
+                "Una partida real de tenis de mesa se juega "
+                "normalmente al mejor de 5 juegos, y cada juego "
+                "es a 11 tantos.\n\n"
+
+                "Para que la simulación con IGTTA sea más rápida "
+                "y no resulte larga o pesada, el programa utiliza "
+                "una modalidad de partida reducida:\n\n"
+
+                "• Cada juego es a 3 tantos.\n"
+                "• La partida es al mejor de 5 juegos.\n"
+                "• Gana la partida el jugador que consigue "
+                "3 juegos primero.\n\n"
+
+                "De esta forma, una partida puede terminar en un "
+                "máximo de 5 juegos, haciendo la simulación mucho "
+                "más ágil."
+            ),
+
+            "¿CÓMO SE INICIA UNA JUGADA?": (
+                "[b]¿CÓMO SE INICIA UNA JUGADA?[/b]\n\n"
+
+                "Cada punto comienza con un saque realizado "
+                "por uno de los dos jugadores.\n\n"
+
+                "El saque debe introducirse siguiendo esta "
+                "secuencia:\n\n"
+
+                "[b]Jugador A:[/b]\n"
+                "JA → MA → MB\n\n"
+
+                "[b]Jugador B:[/b]\n"
+                "JB → MB → MA\n\n"
+
+                "Es decir:\n\n"
+
+                "1. Golpeo del jugador que realiza el saque.\n"
+                "2. Primer bote en la mesa cercana al jugador "
+                "que saca.\n"
+                "3. Segundo bote en la mesa del jugador "
+                "contrario.\n\n"
+
+                "Una vez completado el saque, la pelota continúa "
+                "en juego."
+            ),
+
+            "¿CÓMO CONTINÚA LA JUGADA?": (
+                "[b]¿CÓMO CONTINÚA LA JUGADA?[/b]\n\n"
+
+                "Después del saque, se introducen las colisiones "
+                "que se produzcan durante el punto, siempre en "
+                "el mismo orden en que ocurren.\n\n"
+
+                "Puede producirse cualquier combinación de "
+                "situaciones contempladas por IGTTA, como:\n\n"
+
+                "• Golpeo de un jugador.\n"
+                "• Bote en la mesa.\n"
+                "• Contacto con la red.\n"
+                "• Contacto con una valla.\n"
+                "• Contacto con un lateral.\n"
+                "• Contacto con el suelo.\n"
+                "• Contacto con la tapa de la mesa.\n"
+                "• Contacto con la base de una pata.\n"
+                "• O cualquier otra situación contemplada "
+                "por el programa.\n\n"
+
+                "Después del saque no existe una secuencia "
+                "predeterminada: la secuencia dependerá de lo "
+                "que ocurra durante la jugada."
+            ),
+
+            "¿CÓMO TERMINA UNA JUGADA?": (
+                "[b]¿CÓMO TERMINA UNA JUGADA?[/b]\n\n"
+
+                "IGTTA analiza la secuencia introducida y "
+                "determina cómo termina el punto.\n\n"
+
+                "El resultado se muestra en pantalla junto "
+                "con la explicación correspondiente.\n\n"
+
+                "No es necesario conocer de memoria todas las "
+                "reglas del tenis de mesa para utilizar el "
+                "programa. Tener conocimientos básicos del juego "
+                "facilita la comprensión de las situaciones, "
+                "pero IGTTA está diseñado para que el resultado "
+                "sea didáctico y fácil de seguir.\n\n"
+
+                "El programa se encarga de analizar la secuencia "
+                "y explicar qué ha ocurrido."
+            ),
+
+            "BOTONES DE JUEGO": (
+                "[b]BOTONES DE JUEGO[/b]\n\n"
+
+                "[b]Jugador A / Jugador B[/b]\n"
+                "Identifican a los dos jugadores que participan "
+                "en la jugada. A corresponde al jugador A y B "
+                "corresponde al jugador B.\n\n"
+
+                "[b]Mesa A / Mesa B[/b]\n"
+                "Identifican el lado de la mesa correspondiente "
+                "a cada jugador.\n\n"
+
+                "[b]Red[/b]\n"
+                "Indica un contacto de la pelota con la red.\n\n"
+
+                "[b]Tapa Mesa[/b]\n"
+                "Indica un contacto de la pelota con la tabla "
+                "situada en la parte inferior de la mesa que une "
+                "las patas y proporciona una mayor sujeción y "
+                "estabilidad.\n\n"
+
+                "[b]Base Pata[/b]\n"
+                "Indica un contacto de la pelota con las patas "
+                "de la mesa, que son las que sostienen la mesa "
+                "sobre el suelo.\n\n"
+
+                "[b]Valla[/b]\n"
+                "Indica un contacto de la pelota con una valla.\n\n"
+
+                "[b]Lateral[/b]\n"
+                "Indica un contacto de la pelota con un lateral.\n\n"
+
+                "[b]Suelo[/b]\n"
+                "Indica un contacto de la pelota con el suelo."
+            ),
+
+            "OTROS BOTONES": (
+                "[b]OTROS BOTONES[/b]\n\n"
+
+                "[b]ATRÁS ←[/b]\n"
+                "Elimina la última acción introducida "
+                "en la jugada.\n\n"
+
+                "[b]C[/b]\n"
+                "Borra la jugada que se está introduciendo "
+                "para comenzar de nuevo.\n\n"
+
+                "[b]ANALIZAR[/b]\n"
+                "Analiza la secuencia introducida y muestra "
+                "el resultado.\n\n"
+
+                "[b]Nueva partida[/b]\n"
+                "Comienza una nueva partida y reinicia "
+                "el marcador.\n\n"
+
+                "[b]Borrar Pantalla[/b]\n"
+                "Borra la información mostrada en pantalla."
+            ),
+
+            "IMPORTANTE": (
+                "[b]IMPORTANTE[/b]\n\n"
+
+                "Introduce siempre las acciones en el mismo "
+                "orden en que se producen durante la jugada.\n\n"
+
+                "Una vez introducida la secuencia, pulsa "
+                "[b]ANALIZAR[/b] para que IGTTA compruebe "
+                "la jugada y muestre el resultado."
+            )
+        }
+
+        # ==========================================
+        # MOSTRAR MENÚ PRINCIPAL
+        # ==========================================
+
+        def mostrar_menu():
+
+            contenido.clear_widgets()
+
+            titulo = Label(
+                text="[b]ÍNDICE DE AYUDA[/b]",
+                markup=True,
+                size_hint=(1, None),
+                height=dp(40),
+                font_size="18sp"
+            )
+
+            contenido.add_widget(
+                titulo
+            )
+
+            scroll = ScrollView(
+                size_hint=(1, 1),
+                do_scroll_x=False,
+                do_scroll_y=True
+            )
+
+            lista = BoxLayout(
+                orientation="vertical",
+                spacing=dp(8),
+                size_hint_y=None,
+                padding=dp(5)
+            )
+
+            lista.bind(
+                minimum_height=lista.setter(
+                    "height"
+                )
+            )
+
+            for titulo_seccion in textos:
+
+                boton = IGButton(
+                    text=titulo_seccion,
+                    size_hint=(1, None),
+                    height=dp(48),
+                    font_size="13sp"
+                )
+
+                boton.set_color(
+                    (0.25, 0.25, 0.25, 1)
+                )
+
+                boton.set_text_color(
+                    (1, 1, 1, 1)
+                )
+
+                boton.bind(
+                    on_press=lambda btn,
+                    seccion=titulo_seccion:
+                    mostrar_seccion(seccion)
+                )
+
+                lista.add_widget(
+                    boton
+                )
+
+            scroll.add_widget(
+                lista
+            )
+
+            contenido.add_widget(
+                scroll
+            )
+
+        # ==========================================
+        # MOSTRAR UNA SECCIÓN
+        # ==========================================
+
+        def mostrar_seccion(
+            seccion
+        ):
+
+            contenido.clear_widgets()
+
+            # ------------------------------
+            # BOTÓN VOLVER
+            # ------------------------------
+
+            fila_superior = BoxLayout(
+                orientation="horizontal",
+                size_hint=(1, None),
+                height=dp(45)
+            )
+
+            boton_volver = IGButton(
+                text="← VOLVER",
+                size_hint=(None, 1),
+                width=dp(100),
+                font_size="13sp"
+            )
+
+            boton_volver.set_color(
+                (0.25, 0.25, 0.25, 1)
+            )
+
+            boton_volver.set_text_color(
+                (1, 1, 1, 1)
+            )
+
+            boton_volver.bind(
+                on_press=lambda *_:
+                mostrar_menu()
+            )
+
+            fila_superior.add_widget(
+                boton_volver
+            )
+
+            fila_superior.add_widget(
+                Widget()
+            )
+
+            contenido.add_widget(
+                fila_superior
+            )
+
+            # ------------------------------
+            # TEXTO
+            # ------------------------------
+
+            texto = Label(
+                text=textos[seccion],
+                markup=True,
+                halign="left",
+                valign="top",
+                size_hint_y=None,
+                font_size="14sp"
+            )
+
+            def ajustar_texto(
+                widget,
+                width
+            ):
+
+                widget.text_size = (
+                    width,
+                    None
+                )
+
+            texto.bind(
+                width=ajustar_texto
+            )
+
+            texto.bind(
+                texture_size=lambda w, s:
+                setattr(
+                    w,
+                    "height",
+                    s[1]
+                )
+            )
+
+            scroll = ScrollView(
+                size_hint=(1, 1),
+                do_scroll_x=False,
+                do_scroll_y=True
+            )
+
+            scroll.add_widget(
+                texto
+            )
+
+            contenido.add_widget(
+                scroll
+            )
+
+        # ==========================================
+        # ABRIR EN EL MENÚ PRINCIPAL
+        # ==========================================
+
+        mostrar_menu()
+
+        popup.open()
+
     # ==========================================
     # INSERTAR CÓDIGO
     # ==========================================
@@ -430,12 +768,6 @@ class TenisMesaApp(App):
         self,
         codigo
     ):
-
-        # ==========================================
-        # SI LA JUGADA ANTERIOR YA TERMINÓ,
-        # AL PULSAR EL PRIMER BOTÓN DE LA NUEVA
-        # JUGADA SE BORRA AUTOMÁTICAMENTE
-        # ==========================================
 
         if self.jugada_finalizada:
 
@@ -447,16 +779,11 @@ class TenisMesaApp(App):
             self.logica.posicion_resaltada = None
 
             self.jugada_finalizada = False
-
             self.jugada = ""
 
             self.label_jugada.text = (
                 "[b]INICIO JUGADA:[/b]"
             )
-
-        # ==========================================
-        # SI LA PARTIDA ANTERIOR TERMINÓ
-        # ==========================================
 
         if Config.ganador:
 
@@ -467,10 +794,6 @@ class TenisMesaApp(App):
             Config.ganador = False
 
             self.marcador.reiniciar()
-
-        # ==========================================
-        # BORRAR ÚLTIMO CÓDIGO
-        # ==========================================
 
         if codigo == "←":
 
@@ -495,25 +818,13 @@ class TenisMesaApp(App):
                         self.jugada[:-1]
                     )
 
-        # ==========================================
-        # BORRAR TODA LA SECUENCIA
-        # ==========================================
-
         elif codigo == "C":
 
             self.jugada = ""
 
-        # ==========================================
-        # AÑADIR CÓDIGO
-        # ==========================================
-
         else:
 
             self.jugada += codigo
-
-        # ==========================================
-        # MOSTRAR JUGADA QUE SE ESTÁ CONSTRUYENDO
-        # ==========================================
 
         self.visor.mostrar(
             self.jugada
@@ -562,9 +873,8 @@ class TenisMesaApp(App):
 
         try:
 
-            # Detener cualquier parpadeo anterior
             self.marcador.detener_animacion()
-            
+
             jugada = (
                 self.jugada
                 .strip()
@@ -574,40 +884,24 @@ class TenisMesaApp(App):
             if not jugada:
                 return
 
-            # --------------------------------------
-            # SEPARADOR ENTRE JUGADAS
-            # --------------------------------------
-
             if self.salida.tiene_texto():
 
                 self.mostrar("")
-
-            # --------------------------------------
-            # PROCESAR PUNTO
-            # --------------------------------------
 
             tantoA_antes = Config.tantoA
             tantoB_antes = Config.tantoB
             juegoA_antes = Config.juegoA
             juegoB_antes = Config.juegoB
-            
+
             correcta, posicion = (
                 self.logica.procesar_punto(
                     jugada
                 )
             )
 
-            # --------------------------------------
-            # CAMBIAR TÍTULO
-            # --------------------------------------
-
             self.label_jugada.text = (
                 "[b]RESULTADO JUGADA:[/b]"
             )
-
-            # ======================================
-            # FALTA TERMINAR JUGADA
-            # ======================================
 
             if self.logica.falta_terminar:
 
@@ -615,19 +909,11 @@ class TenisMesaApp(App):
                     falta_terminar=True
                 )
 
-            # ======================================
-            # RED - SE REPITE SAQUE
-            # ======================================
-
             elif self.logica.repite_saque:
 
                 self.salida.mostrar_resultado(
                     repite_saque=True
                 )
-
-            # ======================================
-            # VISOR DE JUGADA
-            # ======================================
 
             self.visor.mostrar_resultado(
                 jugada,
@@ -635,10 +921,6 @@ class TenisMesaApp(App):
                 posicion,
                 self.logica.falta_terminar
             )
-            
-            # ======================================
-            # MARCADOR
-            # ======================================
 
             self.marcador.actualizar(
                 Config.tantoA,
@@ -647,37 +929,43 @@ class TenisMesaApp(App):
                 Config.juegoB
             )
 
-            if Config.tantoA > tantoA_antes and Config.tantoA > 0:
+            if (
+                Config.tantoA > tantoA_antes
+                and Config.tantoA > 0
+            ):
 
                 Clock.schedule_once(
-                    lambda dt: self.marcador.parpadear_A(),
+                    lambda dt:
+                    self.marcador.parpadear_A(),
                     0
                 )
 
-            elif Config.tantoB > tantoB_antes and Config.tantoB > 0:
+            elif (
+                Config.tantoB > tantoB_antes
+                and Config.tantoB > 0
+            ):
 
                 Clock.schedule_once(
-                    lambda dt: self.marcador.parpadear_B(),
+                    lambda dt:
+                    self.marcador.parpadear_B(),
                     0
                 )
 
             elif Config.juegoA > juegoA_antes:
 
                 Clock.schedule_once(
-                    lambda dt: self.marcador.parpadear_juego_A(),
+                    lambda dt:
+                    self.marcador.parpadear_juego_A(),
                     0
                 )
 
             elif Config.juegoB > juegoB_antes:
 
                 Clock.schedule_once(
-                    lambda dt: self.marcador.parpadear_juego_B(),
+                    lambda dt:
+                    self.marcador.parpadear_juego_B(),
                     0
                 )
-           
-            # ======================================
-            # LIMPIAR JUGADA
-            # ======================================
 
             self.jugada = ""
             self.jugada_finalizada = True
@@ -709,6 +997,10 @@ class TenisMesaApp(App):
 
         self.salida.borrar()
         self.visor.limpiar()
+
+        self.logica.falta_terminar = False
+        self.logica.repite_saque = False
+        self.logica.posicion_resaltada = None
 
         self.jugada = ""
         self.jugada_finalizada = False
@@ -797,6 +1089,10 @@ class TenisMesaApp(App):
             Config.juegoB = 0
             Config.ganador = False
 
+            self.logica.falta_terminar = False
+            self.logica.repite_saque = False
+            self.logica.posicion_resaltada = None
+
             self.marcador.reiniciar()
 
         boton_si.bind(
@@ -863,6 +1159,10 @@ class TenisMesaApp(App):
         self.jugada = ""
 
         self.visor.limpiar()
+
+        self.logica.falta_terminar = False
+        self.logica.repite_saque = False
+        self.logica.posicion_resaltada = None
 
         self.label_jugada.text = (
             "[b]INICIO JUGADA:[/b]"
