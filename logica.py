@@ -78,6 +78,49 @@ class Logica:
 
     # --------------------------------------
 
+    def buscar_descripcion(self, abrevio, posi, gana_A, gana_B):
+
+        if self.cursor is None:
+            return None
+
+        try:
+            posi2 = self.punto[posi+3] + self.punto[posi+4]
+            
+            columna = "DESCRIPCION"
+            	
+            if (gana_A and abrevio in ("MA", "JA")) or (gana_B and abrevio in ("MB", "JB")):
+                columna = "DESCRIPCION_2"
+                
+            if (gana_A and abrevio == "MB") or (gana_B and abrevio == "MA"):
+                if (gana_A and posi2 != "JB") or (gana_B and posi2 != "JA"):
+                    columna = "DESCRIPCION_3"
+            
+            self.cursor.execute(
+                f"""
+                SELECT {columna}
+                FROM colisionables
+                WHERE ABREVIO LIKE ?
+                """,
+                (abrevio,)
+            )
+
+            resultado = self.cursor.fetchone()
+
+            if resultado:
+                return resultado[0]
+
+            return None
+
+        except sqlite3.Error as error:
+
+            self.mostrar(
+                f"ERROR DE BASE DE DATOS\n\n{error}"
+            )
+
+            return None
+
+    # --------------------------------------
+    
     def buscar_colision(
         self,
         pong
@@ -131,7 +174,12 @@ class Logica:
             
         elif punto_de_saque:
         	
-        	zona = "PUNTO DE SAQUE"
+        	if ta:
+        	    falla = "B"
+        	else:
+        	    falla = "A"
+        	    
+        	zona = f"PUNTO DE SAQUE\nEl jugador {falla} no toca la bola"        		
         
         elif falta_terminar:
         	
@@ -139,7 +187,7 @@ class Logica:
 
         else:
 
-            zona = self.buscar_colision(colision)
+            zona = self.buscar_descripcion(colision, posicion, ta, tb)
 
         if len(colision) == 1:
             self.posicion_resaltada = posicion + 6
@@ -437,8 +485,8 @@ class Logica:
                             turnoB = True
 
                             if (
-                                i + 1 < len(resto_jugada)
-                                and resto_jugada[i + 1] == "J"
+                                (i + 1 < len(resto_jugada))
+                                and (resto_jugada[i + 1] in                                      ("J", "S", "V", "L", "T", "B", "M"))
                             ):
 
                                 self.imprime_ganador(
@@ -532,8 +580,8 @@ class Logica:
                             turnoB = False
 
                             if (
-                                i + 1 < len(resto_jugada)
-                                and resto_jugada[i + 1] == "J"
+                                (i + 1 < len(resto_jugada))
+                                and (resto_jugada[i + 1] in                                      ("J", "S", "V", "L", "T", "B", "M"))
                             ):
 
                                 self.imprime_ganador(
