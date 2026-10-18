@@ -159,7 +159,7 @@ class TenisMesaApp(App):
 
         self.salida = Salida(
             size_hint=(1, None),
-            height=dp(180)
+            height=dp(185)
         )
 
         principal.add_widget(
@@ -264,7 +264,7 @@ class TenisMesaApp(App):
 
             altura_label = dp(22)
 
-            altura_salida = dp(180)
+            altura_salida = dp(185)
 
             altura_fila = dp(70)
 

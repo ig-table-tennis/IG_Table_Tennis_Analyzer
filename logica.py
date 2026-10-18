@@ -92,8 +92,11 @@ class Logica:
                 columna = "DESCRIPCION_2"
                 
             if (gana_A and abrevio == "MB") or (gana_B and abrevio == "MA"):
-                if (gana_A and posi2 != "JB") or (gana_B and posi2 != "JA"):
-                    columna = "DESCRIPCION_3"
+                if (gana_A and posi2 == "JB") or (gana_B and posi2 == "JA") or (self.punto[posi+4] == "R"):
+                     
+                    columna = "DESCRIPCION"
+                else:
+                	columna = "DESCRIPCION_3"
             
             self.cursor.execute(
                 f"""
