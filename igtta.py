@@ -424,8 +424,7 @@ class TenisMesaApp(App):
 
                 "• Cada juego es a 3 tantos.\n"
                 "• La partida es al mejor de 5 juegos.\n"
-                "• Gana la partida el jugador que consigue "
-                "3 juegos primero.\n\n"
+                "• Gana la partida el jugador que consigue llegar primero a 3 juegos.\n\n"
 
                 "De esta forma, una partida puede terminar en un "
                 "máximo de 5 juegos, haciendo la simulación mucho "
@@ -442,21 +441,30 @@ class TenisMesaApp(App):
                 "secuencia:\n\n"
 
                 "[b]Jugador A:[/b]\n"
-                "JA → MA → MB\n\n"
+                "Jugador A → Mesa A → Mesa B\n\n"
 
                 "[b]Jugador B:[/b]\n"
-                "JB → MB → MA\n\n"
+                "Jugador B → Mesa B → Mesa A\n\n"
 
                 "Es decir:\n\n"
 
-                "1. Golpeo del jugador que realiza el saque.\n"
+                "1. Golpeo del jugador que realiza el saque (ej: Jugador A <[b]JA[/b]>).\n"
                 "2. Primer bote en la mesa cercana al jugador "
-                "que saca.\n"
+                "que saca (ej: Mesa A <[b]MA[/b]>).\n"
                 "3. Segundo bote en la mesa del jugador "
-                "contrario.\n\n"
+                "contrario (ej: Mesa B <[b]MB[/b]>).\n\n"
 
                 "Una vez completado el saque, la pelota continúa "
-                "en juego."
+                "en juego.\n\n"
+                
+                "Si no se cumplen ninguno de los dos ejemplos anteriores "
+                "al inicio de la jugada pueden ocurrir 4 situaciones:\n\n"
+                "• Que sea [b]RED*[/b] (el saque hay que repetirlo y no se sube tanto al marcador).\n"
+                "• Que la jugada esté incompleta <[b]?[/b]> (tampoco se sube tanto al marcador).\n"
+                "• Que sea [b]FALTA DE SAQUE[/b] (sí sube tanto al marcador).\n"
+                "• O que se produzca una [b]ANOMALIA SECUENCIAL[/b] (se introduce erróneamente la secuencia y no se sube tanto al marcador).\n\n"
+                "[b](*)[/b] Se considera RED cuando la bola despues de botar en una lado de la mesa choca en la red y bota en el otro lado de la mesa. "
+                "Ésto solo sucede en el proceso del SAQUE (inicio de la jugada)."
             ),
 
             "¿CÓMO CONTINÚA LA JUGADA?": (
@@ -469,25 +477,25 @@ class TenisMesaApp(App):
                 "Puede producirse cualquier combinación de "
                 "situaciones contempladas por IGTTA, como:\n\n"
 
-                "• Golpeo de un jugador.\n"
-                "• Bote en la mesa.\n"
-                "• Contacto con la red.\n"
-                "• Contacto con una valla.\n"
-                "• Contacto con un lateral.\n"
-                "• Contacto con el suelo.\n"
-                "• Contacto con la tapa de la mesa.\n"
-                "• Contacto con la base de una pata.\n"
-                "• O cualquier otra situación contemplada "
-                "por el programa.\n\n"
-
-                "Después del saque no existe una secuencia "
-                "predeterminada: la secuencia dependerá de lo "
-                "que ocurra durante la jugada."
+                "• Golpeo de un jugador ([b]Jugador A[/b] o [b]Jugador B[/b]).\n"
+                "• Bote en la mesa ([b]Mesa A[/b] o [b]Mesa B[/b]).\n"
+                "• Contacto con la red ([b]Red[/b]).\n"
+                "• Contacto con una valla ([b]Valla[/b]).\n"
+                "• Contacto con un lateral ([b]Lateral[/b]).\n"
+                "• Contacto con el suelo ([b]Suelo[/b]).\n"
+                "• Contacto con la tapa de la mesa ([b]Tapa Mesa[/b]).\n"
+                "• O contacto con la base de una pata ([b]Base Pata[/b]).\n\n"
+                "Después del saque no existe una secuencia predeterminada, "
+                "es decir, el resultado de la jugada dependerá "
+                "de los valores introducidos manualmente y finaliza "
+                "cuando pulsemos el botón verde ([b]ANALIZAR[/b])."
             ),
 
             "¿CÓMO TERMINA UNA JUGADA?": (
                 "[b]¿CÓMO TERMINA UNA JUGADA?[/b]\n\n"
 
+                "Para terminar una jugada hay que "
+                "pulsar el botón verde <[b]ANALIZAR[/b]>\n\n"
                 "IGTTA analiza la secuencia introducida y "
                 "determina cómo termina el punto.\n\n"
 
@@ -570,9 +578,11 @@ class TenisMesaApp(App):
                 "Introduce siempre las acciones en el mismo "
                 "orden en que se producen durante la jugada.\n\n"
 
-                "Una vez introducida la secuencia, pulsa "
+                "Una vez introducida la secuencia, pulsa el botón "
                 "[b]ANALIZAR[/b] para que IGTTA compruebe "
-                "la jugada y muestre el resultado."
+                "la jugada y muestre el resultado.\n\n"
+                "Para continuar con la siguiente jugada, "
+                "basta con pulsar cualquier botón del juego."
             )
         }
 
